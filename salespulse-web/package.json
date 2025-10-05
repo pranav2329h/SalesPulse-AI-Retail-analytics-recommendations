@@ -3,6 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+
+  
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -37,4 +39,5 @@
   "overrides": {
     "vite": "npm:rolldown-vite@7.1.14"
   }
+  
 }
