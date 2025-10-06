@@ -1,35 +1,20 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { NavLink, Outlet } from 'react-router-dom'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="min-h-screen text-slate-100">
+      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur">
+        <div className="container flex items-center justify-between py-3">
+          <h1 className="text-xl font-semibold">SalesPulse AI</h1>
+          <nav className="flex gap-4">
+            <NavLink to="/" end className={({isActive}) => isActive ? 'text-white' : 'text-slate-400 hover:text-white'}>Dashboard</NavLink>
+            <NavLink to="/products" className={({isActive}) => isActive ? 'text-white' : 'text-slate-400 hover:text-white'}>Products</NavLink>
+          </nav>
+        </div>
+      </header>
+      <main className="container py-6">
+        <Outlet />
+      </main>
+    </div>
   )
 }
-
-export default App
