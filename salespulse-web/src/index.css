@@ -1,24 +1,79 @@
-/* ---- Tailwind (must be first) ---- */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ---- Your minimal globals (safe) ---- */
-html, body, #root { height: 100%; margin: 0; }
-
-:root { --bg1:#0b1020; --bg2:#111827; }
-
-body {
-  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background:
-    radial-gradient(1200px 800px at 20% -10%, rgba(59,130,246,.15), transparent 60%),
-    radial-gradient(1000px 600px at 120% 10%, rgba(147,51,234,.12), transparent 60%),
-    linear-gradient(180deg, var(--bg1), var(--bg2));
-  color: #e5e7eb; /* slate-200 */
+/* === Root palette & font === */
+:root {
+  --bg1: #0b1020;
+  --bg2: #111827;
+  --accent1: #3b82f6;
+  --accent2: #8b5cf6;
+  --glass: rgba(255, 255, 255, 0.05);
+  --border: rgba(255, 255, 255, 0.1);
 }
 
-/* Optional anchor style */
-a { color: #a78bfa; }
-a:hover { text-decoration: underline; }
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background:
+    radial-gradient(1000px 600px at 15% 10%, rgba(59,130,246,.1), transparent 60%),
+    radial-gradient(1000px 600px at 100% 10%, rgba(139,92,246,.1), transparent 60%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+  color: #e5e7eb;
+}
 
-/* Let Tailwind control buttons/inputs; avoid global resets that fight classes */
+/* Smooth transitions for all */
+* {
+  transition: all 0.25s ease-in-out;
+}
+
+/* Button styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: linear-gradient(90deg, var(--accent1), var(--accent2));
+  color: white;
+  font-weight: 600;
+  padding: 0.6rem 1.3rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
+  transform: scale(1);
+}
+.btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.45);
+}
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* Input fields */
+.input {
+  background-color: var(--glass);
+  border: 1px solid var(--border);
+  color: #e5e7eb;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  width: 100%;
+}
+.input:focus {
+  border-color: var(--accent1);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+/* Cards (shared glass style) */
+.glass-card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  border-radius: 1rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+.glass-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(139, 92, 246, 0.4);
+}

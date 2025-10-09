@@ -1,34 +1,82 @@
-import { NavLink, Outlet, Link } from 'react-router-dom'
-import Logo from './components/Logo'
-import Button from './components/Button'
-import { LineChart } from 'lucide-react'
+import { NavLink, Outlet } from 'react-router-dom'
+import PageFade from './components/PageFade'
 
 export default function App() {
   return (
     <div className="min-h-screen text-slate-100">
-      <header className="sticky top-0 z-10 border-b border-slate-800 bg-slate-900/60 backdrop-blur">
-        <div className="container flex items-center justify-between py-3">
-          <Link to="/" className="flex items-center gap-2">
-            <Logo />
-          </Link>
-          <nav className="hidden md:flex gap-6 text-sm">
-            <NavLink to="/" end className={({isActive}) => isActive ? 'text-white' : 'text-slate-300 hover:text-white'}>Dashboard</NavLink>
-            <NavLink to="/products" className={({isActive}) => isActive ? 'text-white' : 'text-slate-300 hover:text-white'}>Products</NavLink>
+      {/* Header */}
+      <header className="sticky top-0 z-20 bg-slate-900/60 backdrop-blur-lg border-b border-slate-700/40 shadow-md">
+        <div className="container mx-auto flex items-center justify-between px-4 py-3">
+          <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-fuchsia-500">
+            SalesPulse AI
+          </h1>
+
+          <nav className="flex gap-3">
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                `px-4 py-2 rounded-lg font-medium ${
+                  isActive
+                    ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white shadow-lg'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
+                }`
+              }
+            >
+              Dashboard
+            </NavLink>
+
+            <NavLink
+              to="/products"
+              className={({ isActive }) =>
+                `px-4 py-2 rounded-lg font-medium ${
+                  isActive
+                    ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white shadow-lg'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
+                }`
+              }
+            >
+              Products
+            </NavLink>
+
+            <NavLink
+              to="/login"
+              className={({ isActive }) =>
+                `hidden sm:inline-block px-4 py-2 rounded-lg font-medium ${
+                  isActive
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
+                }`
+              }
+            >
+              Login
+            </NavLink>
+
+            <NavLink
+              to="/register"
+              className={({ isActive }) =>
+                `px-4 py-2 rounded-lg font-semibold ${
+                  isActive
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                    : 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white hover:brightness-110'
+                }`
+              }
+            >
+              Get Started
+            </NavLink>
           </nav>
-          <div className="flex items-center gap-2">
-            <Button as={Link} to="/login" className="hidden sm:inline-flex">
-              <LineChart size={16} className="mr-2"/> Login
-            </Button>
-            <Button as={Link} to="/register" className="bg-gradient-to-br from-emerald-500 to-teal-500">Get Started</Button>
-          </div>
         </div>
       </header>
 
-      <main className="container py-6">
-        <Outlet />
+      {/* Page body with transition */}
+      <main className="container mx-auto px-4 py-6">
+        <PageFade>
+          <Outlet />
+        </PageFade>
       </main>
 
-      <footer className="container py-8 text-center text-xs text-slate-500">
+      {/* Footer */}
+      <footer className="container mx-auto px-4 py-8 text-center text-xs text-slate-500">
         © {new Date().getFullYear()} SalesPulse AI
       </footer>
     </div>
