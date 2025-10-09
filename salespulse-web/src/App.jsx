@@ -1,9 +1,21 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import PageFade from './components/PageFade'
+import LoadingScreen from './components/LoadingScreen'
 
 export default function App() {
+  // Show the splash screen briefly on first load
+  const [showSplash, setShowSplash] = useState(true)
+  useEffect(() => {
+    const t = setTimeout(() => setShowSplash(false), 700) // 0.7s feels snappy
+    return () => clearTimeout(t)
+  }, [])
+
   return (
     <div className="min-h-screen text-slate-100">
+      {/* Splash overlay (fades out) */}
+      <LoadingScreen show={showSplash} />
+
       {/* Header */}
       <header className="sticky top-0 z-20 bg-slate-900/60 backdrop-blur-lg border-b border-slate-700/40 shadow-md">
         <div className="container mx-auto flex items-center justify-between px-4 py-3">

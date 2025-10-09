@@ -12,7 +12,7 @@ import Register from './pages/Register.jsx'
 import { applyChartTheme } from './chartTheme.js'
 import './index.css'
 
-// ✅ Apply chart theme AFTER chart.js is imported
+// Apply Chart.js dark theme defaults
 applyChartTheme()
 
 const qc = new QueryClient({
