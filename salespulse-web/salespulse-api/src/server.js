@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
 import { prisma } from "./prisma.js"
+import authRouter from './routes/auth.js'
 import kpiRouter from "./routes/kpiRoutes.js"
 
 const app = express()
@@ -23,3 +24,4 @@ app.use("/kpis", kpiRouter)
 
 const PORT = process.env.PORT || 4000
 app.listen(PORT, () => console.log(`API listening on http://localhost:${PORT}`))
+app.use('/auth', authRouter)
