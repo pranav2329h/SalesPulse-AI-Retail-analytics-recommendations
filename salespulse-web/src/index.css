@@ -123,3 +123,31 @@ body{
 /* Page fade (used by React animations wrapper) */
 .fade-enter{ opacity:0; transform: translateY(8px); }
 .fade-enter-active{ opacity:1; transform: translateY(0); transition: opacity .28s ease, transform .28s ease; }
+
+/* ====== Password toggle & glow buttons ====== */
+.input-wrap { position: relative; }
+.toggle-pass {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  width: 34px; height: 34px; border: none; border-radius: 8px;
+  display: grid; place-items: center; cursor: pointer;
+  background: rgba(255,255,255,.06); color: var(--text);
+  transition: background .2s ease, transform .12s ease;
+}
+.toggle-pass:hover { background: rgba(255,255,255,.12); }
+.toggle-pass:active { transform: translateY(-50%) scale(.96); }
+.toggle-pass svg { width: 18px; height: 18px; opacity: .9; }
+
+/* Fancy glow for buttons */
+.btn.glow {
+  box-shadow: 0 0 22px rgba(99,102,241,.35), inset 0 0 0 rgba(255,255,255,0);
+}
+.btn.glow:hover {
+  box-shadow: 0 0 30px rgba(167,139,250,.55), 0 0 8px rgba(99,102,241,.35);
+  filter: brightness(1.06);
+}
+@keyframes glowPulse { 
+  0% { box-shadow: 0 0 18px rgba(167,139,250,.35); }
+  50%{ box-shadow: 0 0 28px rgba(99,102,241,.45); }
+  100%{ box-shadow: 0 0 18px rgba(167,139,250,.35); }
+}
+.btn.glow.pulse { animation: glowPulse 1.6s ease-in-out infinite; }
