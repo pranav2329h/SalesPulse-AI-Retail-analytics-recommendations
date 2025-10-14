@@ -1,79 +1,125 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ========== CSS3 Design System (no Tailwind) ========== */
 
-/* === Root palette & font === */
-:root {
-  --bg1: #0b1020;
-  --bg2: #111827;
-  --accent1: #3b82f6;
-  --accent2: #8b5cf6;
-  --glass: rgba(255, 255, 255, 0.05);
-  --border: rgba(255, 255, 255, 0.1);
+:root{
+  --bg1:#0b1020;
+  --bg2:#111827;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+  --card:rgba(255,255,255,0.05);
+  --card-border:rgba(255,255,255,0.10);
+  --accent1:#6366f1; /* indigo-500 */
+  --accent2:#a78bfa; /* violet-400 */
+  --success:#10b981; /* emerald */
+  --danger:#ef4444;  /* red-500 */
+
+  --radius:12px;
+  --shadow:0 8px 24px rgba(0,0,0,.35);
 }
 
-html, body, #root {
-  height: 100%;
-  margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+*{ box-sizing:border-box; }
+html,body,#root{ height:100%; }
+body{
+  margin:0;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   background:
-    radial-gradient(1000px 600px at 15% 10%, rgba(59,130,246,.1), transparent 60%),
-    radial-gradient(1000px 600px at 100% 10%, rgba(139,92,246,.1), transparent 60%),
+    radial-gradient(1000px 600px at 15% 10%, rgba(99,102,241,.12), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(167,139,250,.12), transparent 60%),
     linear-gradient(180deg, var(--bg1), var(--bg2));
-  color: #e5e7eb;
+  color:var(--text);
 }
 
-/* Smooth transitions for all */
-* {
-  transition: all 0.25s ease-in-out;
-}
-
-/* Button styles */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  background: linear-gradient(90deg, var(--accent1), var(--accent2));
-  color: white;
-  font-weight: 600;
-  padding: 0.6rem 1.3rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
-  transform: scale(1);
-}
-.btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 25px rgba(139, 92, 246, 0.45);
-}
-.btn:active {
-  transform: scale(0.98);
-}
-
-/* Input fields */
-.input {
-  background-color: var(--glass);
-  border: 1px solid var(--border);
-  color: #e5e7eb;
-  padding: 0.6rem 1rem;
-  border-radius: 0.5rem;
-  width: 100%;
-}
-.input:focus {
-  border-color: var(--accent1);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
-}
-
-/* Cards (shared glass style) */
-.glass-card {
-  background: var(--glass);
-  border: 1px solid var(--border);
+/* Layout */
+.container{ max-width:1100px; margin:0 auto; padding:0 16px; }
+.header{
+  position:sticky; top:0; z-index:20;
   backdrop-filter: blur(8px);
-  border-radius: 1rem;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  background: rgba(2,6,23,.6);
+  border-bottom:1px solid var(--card-border);
+  box-shadow: 0 2px 12px rgba(0,0,0,.25);
 }
-.glass-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(139, 92, 246, 0.4);
+.header-bar{ display:flex; align-items:center; justify-content:space-between; padding:14px 0; }
+
+.brand{
+  font-weight:800; font-size:20px;
+  background: linear-gradient(90deg, #60a5fa, #a78bfa);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
 }
+
+.nav{ display:flex; gap:10px; }
+.nav a{
+  display:inline-block; padding:8px 14px; border-radius:10px;
+  font-weight:600; color:#cbd5e1; text-decoration:none;
+}
+.nav a:hover{ color:white; background:rgba(255,255,255,.08); }
+.nav a.active{ color:white; background:linear-gradient(90deg, var(--accent1), var(--accent2)); box-shadow:0 6px 20px rgba(99,102,241,.35); }
+
+.footer{ color:#94a3b8; font-size:12px; text-align:center; padding:32px 0; border-top:1px solid var(--card-border); }
+
+/* Cards */
+.card{
+  background:var(--card); border:1px solid var(--card-border);
+  border-radius:var(--radius); box-shadow:var(--shadow);
+}
+.card.pad{ padding:20px; }
+
+/* Chart “card” content height */
+.chart-body{ height:300px; }
+
+/* Grid helpers */
+.grid{ display:grid; gap:20px; }
+.grid-2{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 992px){ .grid-2{ grid-template-columns: 1fr; } }
+
+/* Buttons */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  padding:10px 16px; border-radius:12px; border:none; cursor:pointer;
+  color:#fff; font-weight:700;
+  background: linear-gradient(90deg, var(--accent1), var(--accent2));
+  box-shadow: 0 0 18px rgba(99,102,241,.35);
+  transform: translateZ(0); transition: transform .15s ease, filter .2s ease, box-shadow .2s ease;
+}
+.btn:hover{ transform:scale(1.03); filter:brightness(1.05); box-shadow: 0 0 24px rgba(167,139,250,.45); }
+.btn:active{ transform:scale(0.98); }
+.btn.success{ background:linear-gradient(90deg, #10b981, #34d399); box-shadow:0 0 18px rgba(16,185,129,.35); }
+
+/* Inputs */
+.input{
+  width:100%; padding:10px 12px; border-radius:10px;
+  background:rgba(255,255,255,.06); color:var(--text);
+  border:1px solid var(--card-border); outline:none;
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+.input:focus{ border-color:var(--accent1); box-shadow: 0 0 0 3px rgba(99,102,241,.35); }
+
+/* Typography helpers */
+.h2{ font-size:22px; font-weight:800; margin:0 0 6px; }
+.muted{ color:var(--muted); font-size:13px; }
+
+/* Table */
+.table{ width:100%; border-collapse:collapse; font-size:14px; }
+.table th, .table td{ padding:10px 12px; text-align:left; border-bottom:1px solid rgba(255,255,255,.06); }
+.table thead th{ color:#cbd5e1; font-weight:700; }
+.table tbody tr:hover{ background:rgba(255,255,255,.04); }
+
+/* Utility */
+.mt-20{ margin-top:20px; }
+.center{ display:grid; place-items:center; }
+.hidden-sm{ display:inline-block; }
+@media (max-width:640px){ .hidden-sm{ display:none; } }
+
+/* Skeletons */
+.skel{ border-radius:8px; background:linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.12), rgba(255,255,255,.06)); background-size:200% 100%; animation: shimmer 1.2s infinite; }
+@keyframes shimmer{ 0%{ background-position:-200% 0; } 100%{ background-position:200% 0; } }
+
+/* Spinner */
+.spinner{
+  width:24px; height:24px; border:2px solid rgba(148,163,184,.5);
+  border-top-color: transparent; border-radius:50%;
+  animation: spin .9s linear infinite;
+}
+@keyframes spin{ to{ transform: rotate(360deg); } }
+
+/* Page fade (used by React animations wrapper) */
+.fade-enter{ opacity:0; transform: translateY(8px); }
+.fade-enter-active{ opacity:1; transform: translateY(0); transition: opacity .28s ease, transform .28s ease; }

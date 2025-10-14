@@ -2,19 +2,16 @@ import ChartCard from '../components/ChartCard'
 import RevenueLine from '../components/RevenueLine'
 import TopSkusBar from '../components/TopSkusBar'
 import CategorySalesBar from '../components/CategorySalesBar'
-import GlassCard from '../components/GlassCard'
 
 export default function Dashboard() {
   return (
-    <div className="grid gap-6">
-      <GlassCard className="p-6">
-        <h2 className="text-2xl font-bold tracking-tight text-white">Dashboard</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Realtime sales analytics powered by MySQL + Express
-        </p>
-      </GlassCard>
+    <div className="grid">
+      <div className="card pad">
+        <h2 className="h2">Dashboard</h2>
+        <p className="muted">Realtime sales analytics powered by MySQL + Express</p>
+      </div>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid grid-2">
         <ChartCard title="Revenue (last 30 days)">
           <RevenueLine days={30} />
         </ChartCard>

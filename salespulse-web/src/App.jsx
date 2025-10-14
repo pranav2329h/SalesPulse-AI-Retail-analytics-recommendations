@@ -1,94 +1,64 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import PageFade from './components/PageFade'
-import LoadingScreen from './components/LoadingScreen'
+
+function Splash({ show }) {
+  if (!show) return null
+  return (
+    <div className="center" style={{
+      position:'fixed', inset:0, zIndex:50,
+      background:'radial-gradient(1000px 600px at 20% 10%, rgba(99,102,241,.15), transparent 60%), radial-gradient(1000px 600px at 100% 0%, rgba(167,139,250,.12), transparent 60%), linear-gradient(180deg,#0b1020,#111827)'
+    }}>
+      <div className="center" style={{gap:16}}>
+        <div style={{
+          width:64,height:64,borderRadius:16,
+          background:'conic-gradient(from 180deg at 50% 50%, #60a5fa, #a78bfa, #60a5fa)',
+          boxShadow:'0 0 24px rgba(99,102,241,.45)', display:'grid', placeItems:'center'
+        }}>
+          <div style={{width:38,height:38,borderRadius:12,background:'rgba(0,0,0,.35)',backdropFilter:'blur(6px)'}} />
+        </div>
+        <div style={{textAlign:'center'}}>
+          <div style={{fontWeight:700}}>SalesPulse AI</div>
+          <div className="muted" style={{marginTop:4}}>Loading dashboard…</div>
+        </div>
+        <div className="spinner" />
+      </div>
+    </div>
+  )
+}
 
 export default function App() {
-  // Show the splash screen briefly on first load
   const [showSplash, setShowSplash] = useState(true)
+  const location = useLocation()
+
   useEffect(() => {
-    const t = setTimeout(() => setShowSplash(false), 700) // 0.7s feels snappy
+    const t = setTimeout(()=>setShowSplash(false), 700)
     return () => clearTimeout(t)
   }, [])
 
   return (
-    <div className="min-h-screen text-slate-100">
-      {/* Splash overlay (fades out) */}
-      <LoadingScreen show={showSplash} />
+    <div style={{minHeight:'100%'}}>
+      <Splash show={showSplash} />
 
-      {/* Header */}
-      <header className="sticky top-0 z-20 bg-slate-900/60 backdrop-blur-lg border-b border-slate-700/40 shadow-md">
-        <div className="container mx-auto flex items-center justify-between px-4 py-3">
-          <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-fuchsia-500">
-            SalesPulse AI
-          </h1>
-
-          <nav className="flex gap-3">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) =>
-                `px-4 py-2 rounded-lg font-medium ${
-                  isActive
-                    ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white shadow-lg'
-                    : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`
-              }
-            >
-              Dashboard
-            </NavLink>
-
-            <NavLink
-              to="/products"
-              className={({ isActive }) =>
-                `px-4 py-2 rounded-lg font-medium ${
-                  isActive
-                    ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white shadow-lg'
-                    : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`
-              }
-            >
-              Products
-            </NavLink>
-
-            <NavLink
-              to="/login"
-              className={({ isActive }) =>
-                `hidden sm:inline-block px-4 py-2 rounded-lg font-medium ${
-                  isActive
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
-                    : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`
-              }
-            >
-              Login
-            </NavLink>
-
-            <NavLink
-              to="/register"
-              className={({ isActive }) =>
-                `px-4 py-2 rounded-lg font-semibold ${
-                  isActive
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
-                    : 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white hover:brightness-110'
-                }`
-              }
-            >
-              Get Started
-            </NavLink>
+      <header className="header">
+        <div className="container header-bar">
+          <div className="brand">SalesPulse AI</div>
+          <nav className="nav">
+            <NavLink to="/" end className={({isActive}) => isActive ? 'active' : undefined}>Dashboard</NavLink>
+            <NavLink to="/products" className={({isActive}) => isActive ? 'active' : undefined}>Products</NavLink>
+            <NavLink to="/login" className={({isActive}) => isActive ? 'active hidden-sm' : 'hidden-sm'}>Login</NavLink>
+            <NavLink to="/register" className={({isActive}) => isActive ? 'active' : undefined}>Get Started</NavLink>
           </nav>
         </div>
       </header>
 
-      {/* Page body with transition */}
-      <main className="container mx-auto px-4 py-6">
-        <PageFade>
+      <main className="container" style={{paddingTop:24, paddingBottom:24}}>
+        {/* simple fade on route change */}
+        <div key={location.pathname} className="fade-enter-active">
           <Outlet />
-        </PageFade>
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="container mx-auto px-4 py-8 text-center text-xs text-slate-500">
+      <footer className="footer container">
         © {new Date().getFullYear()} SalesPulse AI
       </footer>
     </div>

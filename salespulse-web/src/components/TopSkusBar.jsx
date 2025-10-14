@@ -14,7 +14,7 @@ export default function TopSkusBar({ days = 60, limit = 10 }) {
   })
 
   if (isLoading) return <SkeletonCard lines={6} />
-  if (error)     return <div className="text-red-400">Failed to load.</div>
+  if (error)     return <div style={{color:'var(--danger)'}}>Failed to load.</div>
 
   const labels = data.map(d => d.sku)
   const units = data.map(d => d.units)
@@ -27,8 +27,8 @@ export default function TopSkusBar({ days = 60, limit = 10 }) {
   }
 
   return (
-    <div className="relative h-full">
-      {isFetching && <div className="absolute right-3 top-3"><Loader size={18} /></div>}
+    <div className="chart-body" style={{position:'relative'}}>
+      {isFetching && <div style={{position:'absolute', right:10, top:10}}><Loader size={18}/></div>}
       <Bar data={chartData} options={options} />
     </div>
   )

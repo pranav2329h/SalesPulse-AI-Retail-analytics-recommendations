@@ -12,30 +12,21 @@ import Register from './pages/Register.jsx'
 import { applyChartTheme } from './chartTheme.js'
 import './index.css'
 
-// Apply Chart.js dark theme defaults
 applyChartTheme()
 
 const qc = new QueryClient({
   defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      staleTime: 60_000,
-      retry: 1,
-    },
-  },
+    queries: { refetchOnWindowFocus: false, staleTime: 60_000, retry: 1 }
+  }
 })
 
 const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <App />,
-    children: [
-      { index: true, element: <Dashboard /> },
-      { path: 'products', element: <Products /> },
-      { path: 'login', element: <Login /> },
-      { path: 'register', element: <Register /> },
-    ],
-  },
+  { path: '/', element: <App />, children: [
+    { index: true, element: <Dashboard /> },
+    { path: 'products', element: <Products /> },
+    { path: 'login', element: <Login /> },
+    { path: 'register', element: <Register /> },
+  ]}
 ])
 
 ReactDOM.createRoot(document.getElementById('root')).render(

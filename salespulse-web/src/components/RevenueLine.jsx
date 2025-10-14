@@ -15,7 +15,7 @@ export default function RevenueLine({ days = 30 }) {
   })
 
   if (isLoading) return <SkeletonCard lines={8} />
-  if (error)     return <div className="text-red-400">Failed to load.</div>
+  if (error)     return <div style={{color:'var(--danger)'}}>Failed to load.</div>
 
   const labels = data.map(d => d.day)
   const values = data.map(d => d.revenue)
@@ -35,12 +35,8 @@ export default function RevenueLine({ days = 30 }) {
   }
 
   return (
-    <div className="relative h-full">
-      {isFetching && (
-        <div className="pointer-events-none absolute right-3 top-3">
-          <Loader size={18} />
-        </div>
-      )}
+    <div className="chart-body" style={{position:'relative'}}>
+      {isFetching && <div style={{position:'absolute', right:10, top:10}}><Loader size={18}/></div>}
       <Line data={chartData} options={options} />
     </div>
   )

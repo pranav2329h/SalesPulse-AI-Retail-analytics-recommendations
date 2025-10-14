@@ -1,38 +1,72 @@
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import Logo from '../components/Logo'
-import Button from '../components/Button'
-import TextInput from '../components/TextInput'
+import { useState } from 'react'
 
 export default function Register() {
-  const onSubmit = (e) => {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const handleSubmit = e => {
     e.preventDefault()
-    // TODO: call /auth/register when backend auth is ready
-    alert('Registration submit (wire to API in Auth module)')
+    console.log('Register with', { name, email, password })
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] grid place-items-center">
-      <motion.div initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} className="w-full max-w-md">
-        <div className="mb-6 flex items-center justify-center">
-          <Logo size={34} />
-        </div>
-        <div className="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-xl backdrop-blur">
-          <h2 className="mb-1 text-xl font-semibold text-white text-center">Create your account</h2>
-          <p className="mb-6 text-center text-slate-400 text-sm">Start tracking sales with AI</p>
+    <div className="center" style={{ minHeight: 'calc(100vh - 140px)' }}>
+      <div className="card pad" style={{ width: '100%', maxWidth: 420 }}>
+        <h2 className="h2">Create Your Account</h2>
+        <p className="muted" style={{ marginBottom: 20 }}>
+          Start tracking your sales with AI
+        </p>
 
-          <form onSubmit={onSubmit} className="space-y-4">
-            <TextInput label="Full name" placeholder="Jane Doe" required />
-            <TextInput label="Email" type="email" placeholder="you@example.com" required />
-            <TextInput label="Password" type="password" placeholder="••••••••" required />
-            <Button type="submit" className="w-full">Create account</Button>
-          </form>
-
-          <div className="mt-6 text-center text-sm text-slate-400">
-            Already have an account? <Link to="/login" className="text-indigo-400 hover:text-indigo-300">Sign in</Link>
+        <form onSubmit={handleSubmit} className="grid" style={{ gap: 12 }}>
+          <div>
+            <label className="muted">Full Name</label>
+            <input
+              type="text"
+              className="input"
+              placeholder="Jane Doe"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+            />
           </div>
-        </div>
-      </motion.div>
+
+          <div>
+            <label className="muted">Email</label>
+            <input
+              type="email"
+              className="input"
+              placeholder="you@example.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="muted">Password</label>
+            <input
+              type="password"
+              className="input"
+              placeholder="••••••••"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <button type="submit" className="btn success" style={{ marginTop: 10 }}>
+            Create Account
+          </button>
+        </form>
+
+        <p className="muted" style={{ marginTop: 20, textAlign: 'center' }}>
+          Already have an account?{' '}
+          <a href="/login" style={{ color: 'var(--accent1)', textDecoration: 'none' }}>
+            Sign in
+          </a>
+        </p>
+      </div>
     </div>
   )
 }

@@ -1,36 +1,25 @@
-export function SkeletonBar({ className = "" }) {
+export function SkeletonCard({ lines = 6 }) {
   return (
-    <div className={`h-4 w-full animate-pulse rounded bg-white/10 ${className}`} />
-  );
-}
-
-export function SkeletonCard({ lines = 4, className = "" }) {
-  return (
-    <div className={`glass-card p-5 ${className}`}>
-      <div className="mb-3 h-5 w-40 animate-pulse rounded bg-white/10" />
-      <div className="space-y-2">
-        {Array.from({ length: lines }).map((_, i) => (
-          <SkeletonBar key={i} />
-        ))}
+    <div className="card pad">
+      <div className="skel" style={{height:18, width:160, marginBottom:12}} />
+      <div style={{display:'grid', gap:8}}>
+        {Array.from({length: lines}).map((_,i)=>
+          <div key={i} className="skel" style={{height:12, width: '100%'}} />
+        )}
       </div>
     </div>
-  );
+  )
 }
 
-export function SkeletonTable({ rows = 6 }) {
+export function SkeletonTable({ rows=8 }) {
   return (
-    <div className="glass-card p-5">
-      <div className="mb-3 h-5 w-48 animate-pulse rounded bg-white/10" />
-      <div className="divide-y divide-white/10">
-        {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="grid grid-cols-5 gap-3 py-3">
-            <SkeletonBar className="col-span-2" />
-            <SkeletonBar />
-            <SkeletonBar />
-            <SkeletonBar />
-          </div>
-        ))}
+    <div className="card pad">
+      <div className="skel" style={{height:18, width:220, marginBottom:12}} />
+      <div style={{display:'grid', gap:12}}>
+        {Array.from({length: rows}).map((_,i)=>
+          <div key={i} className="skel" style={{height:20, width:'100%'}} />
+        )}
       </div>
     </div>
-  );
+  )
 }
