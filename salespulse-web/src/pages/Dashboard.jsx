@@ -8,7 +8,7 @@ export default function Dashboard() {
     <div className="grid">
       <div className="card pad">
         <h2 className="h2">Dashboard</h2>
-        <p className="muted">Realtime sales analytics powered by MySQL + Express</p>
+        <p className="muted">Realtime sales analytics from your MySQL data.</p>
       </div>
 
       <div className="grid grid-2">

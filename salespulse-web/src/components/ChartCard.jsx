@@ -1,11 +1,11 @@
-export default function ChartCard({ title, children, right }) {
+export default function ChartCard({ title, right, children }) {
   return (
     <div className="card pad">
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
-        <h3 className="h3" style={{margin:0, fontWeight:700}}>{title}</h3>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between', marginBottom:12}}>
+        <h3 style={{margin:0, fontWeight:800}}>{title}</h3>
         {right}
       </div>
-      <div className="chart-body">
+      <div style={{height:300}}>
         {children}
       </div>
     </div>
