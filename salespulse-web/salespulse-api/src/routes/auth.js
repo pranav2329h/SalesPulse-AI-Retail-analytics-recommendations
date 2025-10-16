@@ -1,69 +1,71 @@
-import { Router } from 'express'
-import { prisma } from '../prisma.js'
-import bcrypt from 'bcryptjs'
-import { z } from 'zod'
-import { signUser, setAuthCookie, clearAuthCookie, verifyFromReq } from '../utils/jwt.js'
-import { requireAuth } from '../middleware/requireAuth.js'
+// src/routes/auth.js
+import express from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
 
-const router = Router()
+const prisma = new PrismaClient();
+const router = express.Router();
 
-const registerSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(6),
-})
+function sign(user) {
+  return jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+}
 
+// POST /auth/register
 router.post('/register', async (req, res) => {
-  const parsed = registerSchema.safeParse(req.body)
-  if (!parsed.success) return res.status(400).json({ error: 'Invalid input' })
-  const { name, email, password } = parsed.data
+  try {
+    const { name, email, password } = req.body || {};
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Missing fields' });
+    }
 
-  const exists = await prisma.user.findUnique({ where: { email } })
-  if (exists) return res.status(409).json({ error: 'Email already in use' })
+    const existing = await prisma.users.findUnique({ where: { email } });
+    if (existing) return res.status(409).json({ error: 'Email already registered' });
 
-  const passwordHash = await bcrypt.hash(password, 10)
-  const user = await prisma.user.create({ data: { name, email, passwordHash } })
-  const token = signUser(user)
-  setAuthCookie(res, token)
-  res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } })
-})
+    const password_hash = await bcrypt.hash(password, 10);
+    const inserted = await prisma.users.create({
+      data: { name, email, password_hash },
+      select: { id: true, name: true, email: true, created_at: true },
+    });
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-})
+    const token = sign(inserted);
+    return res.json({ token, user: inserted });
+  } catch (e) {
+    console.error('register error', e);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
 
+// POST /auth/login
 router.post('/login', async (req, res) => {
-  const parsed = loginSchema.safeParse(req.body)
-  if (!parsed.success) return res.status(400).json({ error: 'Invalid input' })
-  const { email, password } = parsed.data
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
 
-  const user = await prisma.user.findUnique({ where: { email } })
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' })
+    const found = await prisma.users.findUnique({ where: { email } });
+    if (!found) return res.status(401).json({ error: 'Invalid credentials' });
 
-  const ok = await bcrypt.compare(password, user.passwordHash)
-  if (!ok) return res.status(401).json({ error: 'Invalid credentials' })
+    const ok = await bcrypt.compare(password, found.password_hash);
+    if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
-  const token = signUser(user)
-  setAuthCookie(res, token)
-  res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } })
-})
+    const user = { id: found.id, name: found.name, email: found.email, created_at: found.created_at };
+    const token = sign(user);
+    return res.json({ token, user });
+  } catch (e) {
+    console.error('login error', e);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
 
-router.post('/logout', (req, res) => {
-  clearAuthCookie(res)
-  res.json({ ok: true })
-})
+// GET /auth/me
+import { requireAuth } from '../middleware/requireAuth.js';
+router.get('/me', requireAuth, async (req, res) => {
+  const me = await prisma.users.findUnique({
+    where: { id: req.user.id },
+    select: { id: true, name: true, email: true, created_at: true },
+  });
+  if (!me) return res.status(404).json({ error: 'User not found' });
+  return res.json({ user: me });
+});
 
-router.get('/me', async (req, res) => {
-  const payload = verifyFromReq(req)
-  if (!payload) return res.json({ user: null })
-  const user = await prisma.user.findUnique({ where: { id: payload.uid }, select: { id:true, name:true, email:true, role:true }})
-  res.json({ user })
-})
-
-// Example protected route
-router.get('/protected/ping', requireAuth, (req, res) => {
-  res.json({ ok:true, user: req.user })
-})
-
-export default router
+export default router;

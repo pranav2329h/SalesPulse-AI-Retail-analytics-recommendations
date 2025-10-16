@@ -9,43 +9,19 @@ import {
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import Dashboard from "./pages/Dashboard.jsx";   // ✅ use the page component you created
+import Dashboard from "./pages/Dashboard.jsx";
+import Products from "./pages/Products.jsx";
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+
 import Protected from "./components/Protected";
+import { AuthProvider } from "./context/AuthContext";
 import { applyChartTheme } from "./chartTheme.js";
 import "./index.css";
 
-// Apply Chart.js theme safely
 applyChartTheme();
 
-/* -------------------- Simple pages -------------------- */
-function Products() {
-  return (
-    <div className="card pad">
-      <h3 style={{ margin: 0 }}>Products</h3>
-      <p className="muted">Product analytics, stock, and trends will appear here.</p>
-    </div>
-  );
-}
-
-function Login() {
-  return (
-    <div className="card pad">
-      <h3>Login Page</h3>
-      <p className="muted">Sign in with your credentials.</p>
-    </div>
-  );
-}
-
-function Register() {
-  return (
-    <div className="card pad">
-      <h3>Register Page</h3>
-      <p className="muted">Create your new SalesPulse AI account.</p>
-    </div>
-  );
-}
-
-/* -------------------- Layout Shell -------------------- */
+/* ---- Layout ---- */
 function App() {
   return (
     <div style={{ minHeight: "100%" }}>
@@ -60,20 +36,17 @@ function App() {
           </nav>
         </div>
       </header>
-
       <main className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <Outlet />
       </main>
-
       <footer className="footer container">© {new Date().getFullYear()} SalesPulse AI</footer>
     </div>
   );
 }
 
-/* -------------------- Error & 404 -------------------- */
+/* ---- Error / 404 ---- */
 function ErrorPage() {
   const error = useRouteError();
-  console.error("Router error:", error);
   return (
     <div className="card pad" style={{ marginTop: 40 }}>
       <h2 className="h2">Something went wrong 😕</h2>
@@ -82,7 +55,6 @@ function ErrorPage() {
     </div>
   );
 }
-
 function NotFound() {
   return (
     <div className="card pad" style={{ marginTop: 40 }}>
@@ -93,21 +65,19 @@ function NotFound() {
   );
 }
 
-/* -------------------- React Query -------------------- */
+/* ---- Query client ---- */
 const qc = new QueryClient({
-  defaultOptions: {
-    queries: { refetchOnWindowFocus: false, staleTime: 60000, retry: 1 },
-  },
+  defaultOptions: { queries: { refetchOnWindowFocus: false, staleTime: 60000, retry: 1 } }
 });
 
-/* -------------------- Router -------------------- */
+/* ---- Router ---- */
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <Dashboard /> },               // ✅ use the imported page
+      { index: true, element: <Dashboard /> },
       {
         path: "products",
         element: (
@@ -124,11 +94,13 @@ const router = createBrowserRouter([
   { path: "*", element: <NotFound /> },
 ]);
 
-/* -------------------- Render -------------------- */
+/* ---- Render ---- */
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <QueryClientProvider client={qc}>
-      <RouterProvider router={router} />
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
     </QueryClientProvider>
   </React.StrictMode>
 );

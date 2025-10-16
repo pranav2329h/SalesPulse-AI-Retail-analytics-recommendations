@@ -1,58 +1,107 @@
-import { Router } from "express"
-import { prisma } from "../prisma.js"
+// src/routes/kpis.js
+import express from 'express';
+import { PrismaClient } from '@prisma/client';
 
-const router = Router()
+const prisma = new PrismaClient();
+const router = express.Router();
 
-// Revenue by day
-router.get("/revenue-by-day", async (req, res) => {
-  const days = Math.min(Number(req.query.days ?? 30), 365)
+/**
+ * GET /kpis/revenue-by-day?days=30
+ * Returns: [ { day: '2025-01-01', revenue: 1234.56 }, ... ]
+ *
+ * Adjust table/column names in SQL if your schema differs.
+ */
+router.get('/revenue-by-day', async (req, res) => {
+  const days = Math.max(1, parseInt(req.query.days || '30', 10));
 
-  const rows = await prisma.$queryRawUnsafe(`
-    SELECT DATE(created_at) AS day, SUM(total) AS revenue
-    FROM orders
-    WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-    GROUP BY DATE(created_at)
-    ORDER BY day ASC
-  `, days)
+  try {
+    const rows = await prisma.$queryRawUnsafe(
+      `
+      SELECT DATE(sold_at) AS day,
+             SUM(price * qty) AS revenue
+      FROM sales
+      WHERE sold_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+      GROUP BY DATE(sold_at)
+      ORDER BY day ASC
+      `,
+      days
+    );
 
-  res.json(rows.map(r => ({ day: r.day, revenue: Number(r.revenue || 0) })))
-})
+    const data = (rows || []).map(r => ({
+      day: r.day,
+      revenue: Number(r.revenue || 0),
+    }));
 
-// Top SKUs
-router.get("/top-skus", async (req, res) => {
-  const days = Math.min(Number(req.query.days ?? 60), 365)
-  const limit = Math.min(Number(req.query.limit ?? 10), 50)
+    res.json(data);
+  } catch (e) {
+    console.error('revenue-by-day error', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
-  const rows = await prisma.$queryRawUnsafe(`
-    SELECT p.sku, p.name, SUM(oi.qty) AS units
-    FROM order_items oi
-    JOIN orders o ON o.id = oi.order_id
-    JOIN products p ON p.id = oi.product_id
-    WHERE o.created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-    GROUP BY p.sku, p.name
-    ORDER BY units DESC
-    LIMIT ?
-  `, days, limit)
+/**
+ * GET /kpis/top-skus?days=60&limit=10
+ * Returns: [ { sku: 'SKU-XXX', units: 123 }, ... ]
+ */
+router.get('/top-skus', async (req, res) => {
+  const days = Math.max(1, parseInt(req.query.days || '60', 10));
+  const limit = Math.max(1, Math.min(50, parseInt(req.query.limit || '10', 10)));
 
-  res.json(rows.map(r => ({ sku: r.sku, name: r.name, units: Number(r.units || 0) })))
-})
+  try {
+    const rows = await prisma.$queryRawUnsafe(
+      `
+      SELECT sku, SUM(qty) AS units
+      FROM sales
+      WHERE sold_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+      GROUP BY sku
+      ORDER BY units DESC
+      LIMIT ?
+      `,
+      days, limit
+    );
 
-// Category sales
-router.get("/category-sales", async (req, res) => {
-  const days = Math.min(Number(req.query.days ?? 60), 365)
+    const data = (rows || []).map(r => ({
+      sku: r.sku,
+      units: Number(r.units || 0),
+    }));
 
-  const rows = await prisma.$queryRawUnsafe(`
-    SELECT COALESCE(p.category, 'Uncategorized') AS category,
-           SUM(oi.qty * oi.price) AS revenue
-    FROM order_items oi
-    JOIN orders o ON o.id = oi.order_id
-    JOIN products p ON p.id = oi.product_id
-    WHERE o.created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-    GROUP BY category
-    ORDER BY revenue DESC
-  `, days)
+    res.json(data);
+  } catch (e) {
+    console.error('top-skus error', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
-  res.json(rows.map(r => ({ category: r.category, revenue: Number(r.revenue || 0) })))
-})
+/**
+ * GET /kpis/category-sales?days=60
+ * Returns: [ { category: 'Electronics', revenue: 9999.99 }, ... ]
+ */
+router.get('/category-sales', async (req, res) => {
+  const days = Math.max(1, parseInt(req.query.days || '60', 10));
 
-export default router
+  try {
+    const rows = await prisma.$queryRawUnsafe(
+      `
+      SELECT COALESCE(category, 'Uncategorized') AS category,
+             SUM(price * qty) AS revenue
+      FROM sales
+      WHERE sold_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+      GROUP BY category
+      ORDER BY revenue DESC
+      `,
+      days
+    );
+
+    const data = (rows || []).map(r => ({
+      category: r.category,
+      revenue: Number(r.revenue || 0),
+    }));
+
+    res.json(data);
+  } catch (e) {
+    console.error('category-sales error', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+export default router;

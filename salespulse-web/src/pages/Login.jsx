@@ -1,59 +1,46 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../state/useAuth'
-
-const Eye = ({ off=false }) => off ? (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3l18 18"/><path d="M10.58 10.58a3 3 0 104.24 4.24"/><path d="M9.88 5.09A10.94 10.94 0 0121 12c-.86 1.19-1.93 2.22-3.13 3.05"/><path d="M6.13 6.13A10.94 10.94 0 003 12a10.94 10.94 0 007.09 6.91"/></svg>
-) : (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
-)
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [show, setShow] = useState(false)
-  const [error, setError] = useState('')
-  const nav = useNavigate()
-  const { login } = useAuth()
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [sp] = useSearchParams();
+  const navigate = useNavigate();
 
-  const onSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
+  async function onSubmit(e) {
+    e.preventDefault();
+    setErr(""); setBusy(true);
     try {
-      await login.mutateAsync({ email, password })
-      nav('/')
-    } catch (err) {
-      setError(err?.response?.data?.error || 'Login failed')
+      await login(email, password);
+      const to = sp.get("from") || "/";
+      navigate(to, { replace: true });
+    } catch (e) {
+      setErr(e?.response?.data?.error || "Login failed");
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
-    <div className="center" style={{ minHeight: 'calc(100vh - 140px)' }}>
-      <div className="card pad" style={{ width: '100%', maxWidth: 420 }}>
-        <h2 className="h2">Sign In</h2>
-        <p className="muted" style={{ marginBottom: 20 }}>Access your SalesPulse AI account</p>
+    <div className="card pad" style={{ maxWidth: 720, margin: "24px auto" }}>
+      <h3 className="h2" style={{ marginBottom: 8 }}>Login</h3>
+      <p className="muted">Sign in with your credentials.</p>
 
-        <form onSubmit={onSubmit} className="grid" style={{ gap: 12 }}>
-          <div>
-            <label className="muted">Email</label>
-            <input className="input" type="email" value={email} onChange={e=>setEmail(e.target.value)} required />
-          </div>
+      {err && <div className="card pad" style={{ background:"#fef2f2", borderColor:"#fecaca", margin:"12px 0" }}>{err}</div>}
 
-          <div>
-            <label className="muted">Password</label>
-            <div className="input-wrap">
-              <input className="input" type={show?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)} required />
-              <button type="button" className="toggle-pass" onClick={()=>setShow(s=>!s)}><Eye off={show}/></button>
-            </div>
-          </div>
+      <form onSubmit={onSubmit} style={{ display:"grid", gap:12, marginTop: 12 }}>
+        <input className="input" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required />
+        <input className="input" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} required />
+        <button className="btn" disabled={busy}>{busy ? "Signing in…" : "Login"}</button>
+      </form>
 
-          {error && <div style={{ color: '#ef4444', fontSize: 13 }}>{error}</div>}
-
-          <button className="btn glow" type="submit" disabled={login.isPending} style={{ marginTop: 10 }}>
-            {login.isPending ? 'Signing in…' : 'Login'}
-          </button>
-        </form>
-      </div>
+      <p className="muted" style={{ marginTop: 12 }}>
+        New here? <Link to="/register">Create an account</Link>
+      </p>
     </div>
-  )
+  );
 }

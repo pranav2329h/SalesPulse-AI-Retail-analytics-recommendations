@@ -10,17 +10,16 @@ datasource db {
 /// =======================
 /// USERS & AUTH
 /// =======================
-model User {
-  id           BigInt     @id @default(autoincrement()) @db.UnsignedBigInt
-  email        String     @unique(map: "uq_users_email") @db.VarChar(255)
-  passwordHash String     @map("password_hash") @db.VarChar(255)
-  role         users_role @default(manager)
-  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
-  events       Event[]
+model users {
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String   @unique
+  password_hash String
+  created_at    DateTime @default(now())
 
   @@map("users")
 }
+
 
 /// App/system events (e.g., login, job runs, domain events) optionally tied to a user
 model Event {
@@ -39,21 +38,18 @@ model Event {
 /// =======================
 /// CATALOG
 /// =======================
-model Product {
-  id              BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
-  name            String            @db.VarChar(200)
-  sku             String            @unique(map: "uq_products_sku") @db.VarChar(100)
-  price           Decimal           @db.Decimal(10, 2)
-  stockQty        Int               @default(0) @map("stock_qty")
-  category        String?           @db.VarChar(100)
-  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamp(0)
-  forecasts       forecasts[]
-  orderItems      OrderItem[]
-  recommendations recommendations[]
+model products {
+  id        Int      @id @default(autoincrement())
+  sku       String   @unique
+  name      String
+  category  String?
+  price     Decimal  @db.Decimal(10,2)
+  stock_qty Int      @default(0)
+  created_at DateTime @default(now())
 
-  @@index([category], map: "idx_products_category")
   @@map("products")
 }
+
 
 /// Optional customer table (handy for real stores)
 model Customer {
@@ -139,4 +135,15 @@ enum users_role {
   admin
   manager
   analyst
+}
+model sales {
+  id       Int      @id @default(autoincrement())
+  sold_at  DateTime @db.Timestamp(0)
+  sku      String
+  category String?
+  price    Decimal  @db.Decimal(10,2)
+  qty      Int
+
+  @@index([sold_at])
+  @@map("sales")
 }

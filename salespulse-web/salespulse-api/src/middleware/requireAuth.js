@@ -1,25 +1,16 @@
 // src/middleware/requireAuth.js
-import { verifyFromReq } from '../utils/jwt.js'
-import { prisma } from '../prisma.js'
+import jwt from 'jsonwebtoken';
 
-// ✅ Named export (and default for flexibility)
-export async function requireAuth(req, res, next) {
+export function requireAuth(req, res, next) {
   try {
-    const payload = verifyFromReq(req)
-    if (!payload) return res.status(401).json({ error: 'Unauthorized' })
+    const hdr = req.headers.authorization || '';
+    const token = hdr.startsWith('Bearer ') ? hdr.slice(7) : null;
+    if (!token) return res.status(401).json({ error: 'Missing token' });
 
-    const user = await prisma.user.findUnique({
-      where: { id: payload.uid },
-      select: { id: true, name: true, email: true, role: true },
-    })
-    if (!user) return res.status(401).json({ error: 'Unauthorized' })
-
-    req.user = user
-    next()
-  } catch (err) {
-    console.error('requireAuth error:', err)
-    res.status(401).json({ error: 'Unauthorized' })
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = { id: payload.id };
+    next();
+  } catch {
+    return res.status(401).json({ error: 'Invalid or expired token' });
   }
 }
-
-export default requireAuth
