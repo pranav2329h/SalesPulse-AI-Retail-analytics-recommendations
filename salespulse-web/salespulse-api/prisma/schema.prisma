@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,141 +9,128 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// =======================
-/// USERS & AUTH
-/// =======================
-model users {
-  id            Int      @id @default(autoincrement())
+/* ============ USERS ============ */
+model User {
+  id            Int       @id @default(autoincrement())
   name          String
-  email         String   @unique
+  email         String    @unique
   password_hash String
-  created_at    DateTime @default(now())
+  created_at    DateTime  @default(now()) @map("created_at")
+
+  // relations
+  orders        Order[]
+  events        Event[]
 
   @@map("users")
 }
 
+/* ============ PRODUCTS ============ */
+model Product {
+  id         Int       @id @default(autoincrement())
+  sku        String    @unique
+  name       String
+  category   String?
+  price      Decimal   @db.Decimal(10, 2)
+  stock_qty  Int       @default(0) @map("stock_qty")
+  created_at DateTime  @default(now()) @map("created_at")
 
-/// App/system events (e.g., login, job runs, domain events) optionally tied to a user
-model Event {
-  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
-  userId    BigInt?  @map("user_id") @db.UnsignedBigInt
-  type      String   @db.VarChar(64)
-  payload   Json?
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
-  user      User?    @relation(fields: [userId], references: [id], map: "fk_events_user")
-
-  @@index([userId], map: "fk_events_user")
-  @@index([type, createdAt], map: "idx_events_type_created")
-  @@map("events")
-}
-
-/// =======================
-/// CATALOG
-/// =======================
-model products {
-  id        Int      @id @default(autoincrement())
-  sku       String   @unique
-  name      String
-  category  String?
-  price     Decimal  @db.Decimal(10,2)
-  stock_qty Int      @default(0)
-  created_at DateTime @default(now())
+  // relations
+  orderItems       OrderItem[]
+  forecasts        Forecast[]
+  recommendations  Recommendation[]
 
   @@map("products")
 }
 
-
-/// Optional customer table (handy for real stores)
+/* ============ CUSTOMERS (optional) ============ */
 model Customer {
-  id              BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
-  name            String            @db.VarChar(200)
-  email           String?           @unique(map: "uq_customers_email") @db.VarChar(255)
-  phone           String?           @db.VarChar(50)
-  rfm_score       Decimal?          @db.Decimal(6, 2)
-  segment         String?           @db.VarChar(32)
-  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamp(0)
-  orders          Order[]
-  recommendations recommendations[]
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  created_at DateTime  @default(now()) @map("created_at")
+
+  // relations
+  orders           Order[]
+  recommendations  Recommendation[]
 
   @@map("customers")
 }
 
-/// =======================
-/// SALES / ORDERS
-/// =======================
+/* ============ ORDERS ============ */
 model Order {
-  id         BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
-  customerId BigInt        @map("customer_id") @db.UnsignedBigInt
-  total      Decimal       @db.Decimal(12, 2)
-  status     orders_status @default(paid)
-  createdAt  DateTime      @default(now()) @map("created_at") @db.Timestamp(0)
-  items      OrderItem[]
-  customer   Customer      @relation(fields: [customerId], references: [id], map: "fk_orders_customer")
+  id         Int       @id @default(autoincrement())
+  userId     Int?      @map("user_id")
+  customerId Int?      @map("customer_id")
+  created_at DateTime  @default(now()) @map("created_at")
 
-  @@index([createdAt], map: "idx_orders_created")
-  @@index([customerId, createdAt], map: "idx_orders_customer_created")
+  // relations
+  user      User?      @relation(fields: [userId], references: [id], map: "fk_orders_user")
+  customer  Customer?  @relation(fields: [customerId], references: [id], map: "fk_orders_customer")
+  items     OrderItem[]
+
   @@map("orders")
 }
 
-/// Order line items
+/* ============ ORDER ITEMS ============ */
 model OrderItem {
-  id        BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
-  orderId   BigInt  @map("order_id") @db.UnsignedBigInt
-  productId BigInt  @map("product_id") @db.UnsignedBigInt
+  id        Int      @id @default(autoincrement())
+  orderId   Int      @map("order_id")
+  productId Int      @map("product_id")
   qty       Int
-  price     Decimal @db.Decimal(10, 2)
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade, map: "fk_order_items_order")
-  product   Product @relation(fields: [productId], references: [id], map: "fk_order_items_product")
+  price     Decimal  @db.Decimal(10, 2)
 
-  @@index([orderId], map: "idx_order_items_order")
-  @@index([productId], map: "idx_order_items_product")
+  order   Order   @relation(fields: [orderId], references: [id], map: "fk_order_items_order")
+  product Product @relation(fields: [productId], references: [id], map: "fk_order_items_product")
+
   @@map("order_items")
 }
 
-model forecasts {
-  id          BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
-  product_id  BigInt   @db.UnsignedBigInt
-  date        DateTime @db.Date
-  demand_pred Int
-  created_at  DateTime @default(now()) @db.Timestamp(0)
-  products    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade, map: "fk_forecast_product")
+/* ============ FORECASTS (optional) ============ */
+model Forecast {
+  id              Int      @id @default(autoincrement())
+  productId       Int      @map("product_id")
+  predicted_units Int
+  created_at      DateTime @default(now()) @map("created_at")
 
-  @@unique([product_id, date], map: "uq_forecast_product_date")
-  @@index([date], map: "idx_forecast_date")
+  product Product @relation(fields: [productId], references: [id], map: "fk_forecast_product")
+
+  @@map("forecasts")
 }
 
-model recommendations {
-  id          BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
-  customer_id BigInt   @db.UnsignedBigInt
-  product_id  BigInt   @db.UnsignedBigInt
-  score       Decimal  @db.Decimal(6, 5)
-  created_at  DateTime @default(now()) @db.Timestamp(0)
-  customers   Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade, map: "fk_reco_customer")
-  products    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade, map: "fk_reco_product")
+/* ============ RECOMMENDATIONS (optional) ============ */
+model Recommendation {
+  id          Int       @id @default(autoincrement())
+  customerId  Int       @map("customer_id")
+  productId   Int       @map("product_id")
+  score       Float
+  created_at  DateTime  @default(now()) @map("created_at")
 
-  @@unique([customer_id, product_id], map: "uq_reco_customer_product")
-  @@index([product_id], map: "fk_reco_product")
+  customers Customer @relation(fields: [customerId], references: [id], map: "fk_reco_customer")
+  products  Product  @relation(fields: [productId], references: [id], map: "fk_reco_product")
+
+  @@map("recommendations")
 }
 
-enum orders_status {
-  pending
-  paid
-  shipped
-  cancelled
-  refunded
+/* ============ EVENTS (optional) ============ */
+model Event {
+  id        Int       @id @default(autoincrement())
+  type      String
+  userId    Int?      @map("user_id")
+  meta      Json?
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+
+  user      User?     @relation(fields: [userId], references: [id], map: "fk_events_user")
+
+  @@map("events")
 }
 
-enum users_role {
-  admin
-  manager
-  analyst
-}
-model sales {
+/* ============ SALES (used by KPI endpoints) ============ */
+model Sale {
   id       Int      @id @default(autoincrement())
-  sold_at  DateTime @db.Timestamp(0)
+  sold_at  DateTime @map("sold_at") @db.Timestamp(0)
   sku      String
   category String?
-  price    Decimal  @db.Decimal(10,2)
+  price    Decimal  @db.Decimal(10, 2)
   qty      Int
 
   @@index([sold_at])
