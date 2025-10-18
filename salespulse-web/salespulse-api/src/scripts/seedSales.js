@@ -1,65 +1,63 @@
-import 'dotenv/config'
+// src/scripts/seedSales.js
 import { PrismaClient } from '@prisma/client'
+import { faker } from '@faker-js/faker'
 
 const prisma = new PrismaClient()
 
-const CATEGORIES = ['Electronics','Home & Kitchen','Sports','Beauty','Fashion','Groceries','Automotive']
+const CATEGORIES = ['Electronics', 'Apparel', 'Home', 'Beauty', 'Grocery']
+const SKUS = Array.from({ length: 30 }, (_, i) => `SKU-${1000 + i}`)
 
-function rand(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
+function round2(n) {
+  return Math.round(n * 100) / 100
 }
 
 async function main() {
-  // If you already have products, we’ll use them; otherwise generate some SKUs inline
-  const products = await prisma.products.findMany().catch(() => [])
-  const useProducts = products.length > 0
+  console.log('Seeding sales...')
 
-  // wipe any old seed (optional)
-  // await prisma.$executeRawUnsafe(`DELETE FROM sales`)
+  // Clear existing data if you want a clean slate (optional)
+  // await prisma.sale.deleteMany()
 
-  const rows = []
   const today = new Date()
-
+  const batch = []
   for (let d = 0; d < 90; d++) {
-    const day = new Date(today)
-    day.setDate(day.getDate() - d)
+    const date = new Date(today)
+    date.setHours(12, 0, 0, 0) // normalize time
+    date.setDate(today.getDate() - d)
 
-    const ordersToday = rand(10, 30)
-    for (let i = 0; i < ordersToday; i++) {
-      const sold_at = new Date(day)
-      sold_at.setHours(rand(9, 20), rand(0, 59), rand(0, 59), 0)
+    // ~40 rows per day
+    for (let i = 0; i < 40; i++) {
+      const sku = faker.helpers.arrayElement(SKUS)
+      const category = faker.helpers.arrayElement(CATEGORIES)
+      const quantity = faker.number.int({ min: 1, max: 5 })
+      const unitPrice = round2(faker.number.float({ min: 5, max: 500 }))
+      const revenue = round2(quantity * unitPrice)
 
-      let sku, name, category, price
-      if (useProducts) {
-        const p = products[rand(0, products.length - 1)]
-        sku = p.sku
-        category = p.category || CATEGORIES[rand(0, CATEGORIES.length - 1)]
-        price = Number(p.price)
-      } else {
-        sku = `SKU-${rand(100, 999)}`
-        category = CATEGORIES[rand(0, CATEGORIES.length - 1)]
-        price = [199, 499, 999, 1499, 4999, 9999][rand(0, 5)]
-      }
-      const qty = rand(1, 5)
-
-      rows.push({
-        sold_at,
+      batch.push({
+        orderDate: date,
         sku,
         category,
-        price,
-        qty
+        quantity,
+        unitPrice,
+        revenue
       })
     }
   }
 
-  // batch insert
-  for (let i = 0; i < rows.length; i += 500) {
-    await prisma.sales.createMany({ data: rows.slice(i, i + 500) })
-  }
+  // Bulk insert
+  await prisma.sale.createMany({
+    data: batch,
+    skipDuplicates: true
+  })
 
-  console.log(`Seeded ${rows.length} sales rows.`)
+  console.log(`Seeded ${batch.length} sales rows`)
 }
 
 main()
-  .catch(e => { console.error(e); process.exit(1) })
-  .finally(async () => { await prisma.$disconnect() })
+  .then(async () => {
+    await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })

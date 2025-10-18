@@ -1,138 +1,26 @@
 // prisma/schema.prisma
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-/* ============ USERS ============ */
-model User {
-  id            Int       @id @default(autoincrement())
-  name          String
-  email         String    @unique
-  password_hash String
-  created_at    DateTime  @default(now()) @map("created_at")
-
-  // relations
-  orders        Order[]
-  events        Event[]
-
-  @@map("users")
+generator client {
+  provider = "prisma-client-js"
 }
 
-/* ============ PRODUCTS ============ */
-model Product {
-  id         Int       @id @default(autoincrement())
-  sku        String    @unique
-  name       String
-  category   String?
-  price      Decimal   @db.Decimal(10, 2)
-  stock_qty  Int       @default(0) @map("stock_qty")
-  created_at DateTime  @default(now()) @map("created_at")
-
-  // relations
-  orderItems       OrderItem[]
-  forecasts        Forecast[]
-  recommendations  Recommendation[]
-
-  @@map("products")
-}
-
-/* ============ CUSTOMERS (optional) ============ */
-model Customer {
-  id         Int       @id @default(autoincrement())
-  name       String
-  email      String    @unique
-  created_at DateTime  @default(now()) @map("created_at")
-
-  // relations
-  orders           Order[]
-  recommendations  Recommendation[]
-
-  @@map("customers")
-}
-
-/* ============ ORDERS ============ */
-model Order {
-  id         Int       @id @default(autoincrement())
-  userId     Int?      @map("user_id")
-  customerId Int?      @map("customer_id")
-  created_at DateTime  @default(now()) @map("created_at")
-
-  // relations
-  user      User?      @relation(fields: [userId], references: [id], map: "fk_orders_user")
-  customer  Customer?  @relation(fields: [customerId], references: [id], map: "fk_orders_customer")
-  items     OrderItem[]
-
-  @@map("orders")
-}
-
-/* ============ ORDER ITEMS ============ */
-model OrderItem {
-  id        Int      @id @default(autoincrement())
-  orderId   Int      @map("order_id")
-  productId Int      @map("product_id")
-  qty       Int
-  price     Decimal  @db.Decimal(10, 2)
-
-  order   Order   @relation(fields: [orderId], references: [id], map: "fk_order_items_order")
-  product Product @relation(fields: [productId], references: [id], map: "fk_order_items_product")
-
-  @@map("order_items")
-}
-
-/* ============ FORECASTS (optional) ============ */
-model Forecast {
-  id              Int      @id @default(autoincrement())
-  productId       Int      @map("product_id")
-  predicted_units Int
-  created_at      DateTime @default(now()) @map("created_at")
-
-  product Product @relation(fields: [productId], references: [id], map: "fk_forecast_product")
-
-  @@map("forecasts")
-}
-
-/* ============ RECOMMENDATIONS (optional) ============ */
-model Recommendation {
-  id          Int       @id @default(autoincrement())
-  customerId  Int       @map("customer_id")
-  productId   Int       @map("product_id")
-  score       Float
-  created_at  DateTime  @default(now()) @map("created_at")
-
-  customers Customer @relation(fields: [customerId], references: [id], map: "fk_reco_customer")
-  products  Product  @relation(fields: [productId], references: [id], map: "fk_reco_product")
-
-  @@map("recommendations")
-}
-
-/* ============ EVENTS (optional) ============ */
-model Event {
-  id        Int       @id @default(autoincrement())
-  type      String
-  userId    Int?      @map("user_id")
-  meta      Json?
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
-
-  user      User?     @relation(fields: [userId], references: [id], map: "fk_events_user")
-
-  @@map("events")
-}
-
-/* ============ SALES (used by KPI endpoints) ============ */
 model Sale {
-  id       Int      @id @default(autoincrement())
-  sold_at  DateTime @map("sold_at") @db.Timestamp(0)
-  sku      String
-  category String?
-  price    Decimal  @db.Decimal(10, 2)
-  qty      Int
+  id        Int      @id @default(autoincrement())
+  orderDate DateTime @map("order_date") @db.Timestamp(6)
+  sku       String
+  category  String
+  quantity  Int
+  unitPrice Decimal  @map("unit_price") @db.Decimal(10, 2)
+  revenue   Decimal  @db.Decimal(12, 2)
+  createdAt DateTime @default(now()) @map("created_at")
 
-  @@index([sold_at])
-  @@map("sales")
+  @@index([orderDate])
+  @@index([category])
+  @@index([sku])
+  @@map("sales") // actual table name is `sales`
 }

@@ -1,39 +1,23 @@
 // src/server.js
-import 'dotenv/config';
-import express from 'express';
-import morgan from 'morgan';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
+import 'dotenv/config'
+import express from 'express'
+import cors from 'cors'
+import morgan from 'morgan'
+import kpiRouter from './routes/kpiRoutes.js'
 
-import authRoutes from './routes/auth.js';
-import productsRoutes from './routes/products.js';
-import kpiRoutes from './routes/kpiRoutes.js'; // <-- ensure this file exists
+const app = express()
 
-const app = express();
-const PORT = process.env.PORT || 4000;
+app.use(cors())
+app.use(express.json())
+app.use(morgan('dev'))
 
-app.use(morgan('dev'));
-app.use(express.json());
-app.use(cookieParser());
+app.get('/health', (req, res) => {
+  res.json({ ok: true, env: process.env.NODE_ENV || 'development' })
+})
 
-// Allow Vite dev origin
-app.use(
-  cors({
-    origin: ['http://localhost:5173'],
-    credentials: true,
-  })
-);
+app.use('/kpis', kpiRouter)
 
-app.get('/', (_req, res) => res.send('✅ SalesPulse API is running'));
-
-// Mount routes
-app.use('/auth', authRoutes);
-app.use('/products', productsRoutes);
-app.use('/kpis', kpiRoutes);
-
-// 404
-app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
-
+const PORT = process.env.PORT || 4000
 app.listen(PORT, () => {
-  console.log(`API listening on http://localhost:${PORT}`);
-});
+  console.log(`API listening on http://localhost:${PORT}`)
+})
