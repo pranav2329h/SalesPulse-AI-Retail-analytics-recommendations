@@ -1,19 +1,19 @@
+// src/middleware/requireAuth.js
 import jwt from 'jsonwebtoken'
 
-const JWT_COOKIE_NAME = process.env.JWT_COOKIE_NAME || 'token'
-const JWT_SECRET = process.env.JWT_SECRET || 'devsecret'
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me'
 
 export function requireAuth(req, res, next) {
+  const header = req.headers.authorization || ''
+  const token = header.startsWith('Bearer ') ? header.slice(7) : null
+
+  if (!token) return res.status(401).json({ error: 'missing_token' })
+
   try {
-    const bearer = req.headers.authorization
-    const headerToken = bearer?.startsWith('Bearer ') ? bearer.slice(7) : null
-    const cookieToken = req.cookies?.[JWT_COOKIE_NAME]
-    const token = headerToken || cookieToken
-    if (!token) return res.status(401).json({ error: 'Unauthorized' })
     const payload = jwt.verify(token, JWT_SECRET)
-    req.user = payload
+    req.user = { id: payload.sub, email: payload.email }
     next()
   } catch {
-    res.status(401).json({ error: 'Unauthorized' })
+    return res.status(401).json({ error: 'invalid_token' })
   }
 }

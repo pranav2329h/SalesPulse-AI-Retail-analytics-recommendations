@@ -9,11 +9,21 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique @db.VarChar(191)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users") // maps to `users` table
+}
+
 model Sale {
   id        Int      @id @default(autoincrement())
   orderDate DateTime @map("order_date") @db.Timestamp(6)
-  sku       String
-  category  String
+  sku       String   @db.VarChar(100)
+  category  String   @db.VarChar(100)
   quantity  Int
   unitPrice Decimal  @map("unit_price") @db.Decimal(10, 2)
   revenue   Decimal  @db.Decimal(12, 2)
@@ -22,5 +32,5 @@ model Sale {
   @@index([orderDate])
   @@index([category])
   @@index([sku])
-  @@map("sales") // actual table name is `sales`
+  @@map("sales") // maps to `sales` table
 }
