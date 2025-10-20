@@ -1,24 +1,26 @@
-import axios from "axios";
+import axios from 'axios'
 
-export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000",
-  withCredentials: true, // keep true — ok for token or cookies
-});
+const api = axios.create({
+  baseURL: '/api',
+  withCredentials: true
+})
 
-// Attach token to every request
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`; // <— cookie-only? remove this line.
-  return config;
-});
+// Auth
+export const register = (payload) => api.post('/auth/register', payload)
+export const login = (payload) => api.post('/auth/login', payload)
+export const me = () => api.get('/auth/me')
+export const logout = () => api.post('/auth/logout')
 
-// If we ever get a 401, clear token to force re-login
-api.interceptors.response.use(
-  (r) => r,
-  (err) => {
-    if (err?.response?.status === 401) {
-      localStorage.removeItem("token");
-    }
-    return Promise.reject(err);
-  }
-);
+// Products
+export const listProducts = (q) => api.get('/products', { params: q ? { search: q } : {} })
+export const getProduct = (id) => api.get(`/products/${id}`)
+export const createProduct = (payload) => api.post('/products', payload)
+export const updateProduct = (id, payload) => api.put(`/products/${id}`, payload)
+export const deleteProduct = (id) => api.delete(`/products/${id}`)
+
+// KPIs (optional direct calls)
+export const revenueByDay = (days=30) => api.get('/kpis/revenue-by-day', { params: { days } })
+export const topSkus = (days=60, limit=10) => api.get('/kpis/top-skus', { params: { days, limit } })
+export const categorySales = (days=60) => api.get('/kpis/category-sales', { params: { days } })
+
+export default api

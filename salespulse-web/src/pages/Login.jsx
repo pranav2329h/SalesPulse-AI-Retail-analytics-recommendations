@@ -1,46 +1,44 @@
-import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useState } from 'react'
+import { login, me, logout } from '../lib/api'
 
 export default function Login() {
-  const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  const [sp] = useSearchParams();
-  const navigate = useNavigate();
+  const [form, setForm] = useState({ email:'', password:'' })
+  const [user, setUser] = useState(null)
+  const [msg, setMsg] = useState(null)
 
-  async function onSubmit(e) {
-    e.preventDefault();
-    setErr(""); setBusy(true);
+  async function onLogin(e) {
+    e.preventDefault()
     try {
-      await login(email, password);
-      const to = sp.get("from") || "/";
-      navigate(to, { replace: true });
+      await login(form)
+      const { data } = await me()
+      setUser(data.user)
+      setMsg(null)
     } catch (e) {
-      setErr(e?.response?.data?.error || "Login failed");
-    } finally {
-      setBusy(false);
+      setMsg(e.response?.data?.error || 'Login failed')
     }
   }
 
+  async function onLogout() {
+    await logout()
+    setUser(null)
+  }
+
   return (
-    <div className="card pad" style={{ maxWidth: 720, margin: "24px auto" }}>
-      <h3 className="h2" style={{ marginBottom: 8 }}>Login</h3>
-      <p className="muted">Sign in with your credentials.</p>
-
-      {err && <div className="card pad" style={{ background:"#fef2f2", borderColor:"#fecaca", margin:"12px 0" }}>{err}</div>}
-
-      <form onSubmit={onSubmit} style={{ display:"grid", gap:12, marginTop: 12 }}>
-        <input className="input" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required />
-        <input className="input" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} required />
-        <button className="btn" disabled={busy}>{busy ? "Signing in…" : "Login"}</button>
-      </form>
-
-      <p className="muted" style={{ marginTop: 12 }}>
-        New here? <Link to="/register">Create an account</Link>
-      </p>
+    <div style={{maxWidth:360}}>
+      <h2>Login</h2>
+      {!user ? (
+        <form onSubmit={onLogin} style={{display:'grid', gap:8}}>
+          <input placeholder="Email" value={form.email} onChange={e=>setForm({...form, email:e.target.value})}/>
+          <input placeholder="Password" type="password" value={form.password} onChange={e=>setForm({...form, password:e.target.value})}/>
+          <button>Login</button>
+          {msg && <p>{msg}</p>}
+        </form>
+      ) : (
+        <div>
+          <p>Welcome, {user.name || user.email}</p>
+          <button onClick={onLogout}>Logout</button>
+        </div>
+      )}
     </div>
-  );
+  )
 }

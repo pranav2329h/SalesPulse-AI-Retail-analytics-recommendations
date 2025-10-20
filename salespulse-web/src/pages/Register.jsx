@@ -1,46 +1,28 @@
-import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useState } from 'react'
+import { register } from '../lib/api'
 
 export default function Register() {
-  const { register } = useAuth();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  const navigate = useNavigate();
+  const [form, setForm] = useState({ name:'', email:'', password:'' })
+  const [msg, setMsg] = useState(null)
 
   async function onSubmit(e) {
-    e.preventDefault();
-    setErr(""); setBusy(true);
+    e.preventDefault()
     try {
-      await register(name, email, password);
-      navigate("/", { replace: true });
+      await register(form)
+      setMsg('Registered! You can now login.')
     } catch (e) {
-      setErr(e?.response?.data?.error || "Registration failed");
-    } finally {
-      setBusy(false);
+      setMsg(e.response?.data?.error || 'Error')
     }
   }
 
   return (
-    <div className="card pad" style={{ maxWidth: 720, margin: "24px auto" }}>
-      <h3 className="h2" style={{ marginBottom: 8 }}>Create account</h3>
-      <p className="muted">Start tracking sales with AI.</p>
-
-      {err && <div className="card pad" style={{ background:"#fef2f2", borderColor:"#fecaca", margin:"12px 0" }}>{err}</div>}
-
-      <form onSubmit={onSubmit} style={{ display:"grid", gap:12, marginTop: 12 }}>
-        <input className="input" placeholder="Full name" value={name} onChange={e=>setName(e.target.value)} required />
-        <input className="input" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required />
-        <input className="input" type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} required />
-        <button className="btn" disabled={busy}>{busy ? "Creating…" : "Create account"}</button>
-      </form>
-
-      <p className="muted" style={{ marginTop: 12 }}>
-        Already have an account? <Link to="/login">Sign in</Link>
-      </p>
-    </div>
-  );
+    <form onSubmit={onSubmit} style={{maxWidth:360, display:'grid', gap:8}}>
+      <h2>Register</h2>
+      <input placeholder="Name" value={form.name} onChange={e=>setForm({...form, name:e.target.value})}/>
+      <input placeholder="Email" value={form.email} onChange={e=>setForm({...form, email:e.target.value})}/>
+      <input placeholder="Password" type="password" value={form.password} onChange={e=>setForm({...form, password:e.target.value})}/>
+      <button>Sign up</button>
+      {msg && <p>{msg}</p>}
+    </form>
+  )
 }
