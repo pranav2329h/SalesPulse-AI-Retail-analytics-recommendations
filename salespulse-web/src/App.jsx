@@ -1,20 +1,55 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 
+// pages
 import Register from './pages/Register'
 import Login from './pages/Login'
 import Products from './pages/Products'
 
+// API
 import { revenueByDay, topSkus, categorySales } from './lib/api'
 
+// Charts
 import { Line, Bar, Doughnut } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
-  CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend
+  CategoryScale, LinearScale, PointElement, LineElement,
+  BarElement, ArcElement, Tooltip, Legend
 } from 'chart.js'
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend)
 
-const inr = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(n || 0))
+// Register chart.js components once
+ChartJS.register(
+  CategoryScale, LinearScale, PointElement, LineElement,
+  BarElement, ArcElement, Tooltip, Legend
+)
+
+// Currency helper
+const inr = (n) => new Intl.NumberFormat('en-IN', {
+  style: 'currency', currency: 'INR', maximumFractionDigits: 0
+}).format(Number(n || 0))
+
+// Common chart options (nice defaults + colors that fit the theme)
+const commonChartOpts = {
+  responsive: true,
+  animation: { duration: 900, easing: 'easeInOutCubic' },
+  hover: { mode: 'nearest', intersect: true },
+  plugins: {
+    legend: {
+      labels: { color: '#cfe0ff', usePointStyle: true, pointStyle: 'circle' }
+    },
+    tooltip: {
+      backgroundColor: 'rgba(12,16,28,.95)',
+      borderColor: 'rgba(255,255,255,.1)',
+      borderWidth: 1,
+      titleColor: '#eaf0ff',
+      bodyColor: '#cfe0ff',
+    }
+  },
+  scales: {
+    x: { ticks: { color: '#b8c9ee' }, grid: { color: 'rgba(255,255,255,.06)' } },
+    y: { ticks: { color: '#b8c9ee', callback: v => inr(v) }, grid: { color: 'rgba(255,255,255,.06)' } }
+  }
+}
 
 function Dashboard() {
   const [revData, setRevData] = useState([])
@@ -41,22 +76,44 @@ function Dashboard() {
     })()
   }, [])
 
+  // Build datasets
   const revenueLine = useMemo(() => ({
     labels: revData.map(r => r.day),
-    datasets: [{ label: 'Revenue (₹)', data: revData.map(r => Number(r.revenue || 0)), borderWidth: 2, tension: 0.2, pointRadius: 2 }]
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: revData.map(r => Number(r.revenue || 0)),
+      borderWidth: 2,
+      pointRadius: 2,
+      tension: 0.25
+    }]
   }), [revData])
 
   const topSkusBar = useMemo(() => ({
     labels: skuData.map(x => x.sku),
-    datasets: [{ label: 'Revenue (₹)', data: skuData.map(x => Number(x.revenue || 0)), borderWidth: 1 }]
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: skuData.map(x => Number(x.revenue || 0)),
+      borderWidth: 1
+    }]
   }), [skuData])
 
   const categoryPie = useMemo(() => ({
     labels: catData.map(x => x.category ?? 'Uncategorized'),
-    datasets: [{ label: 'Revenue (₹)', data: catData.map(x => Number(x.revenue || 0)) }]
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: catData.map(x => Number(x.revenue || 0))
+    }]
   }), [catData])
 
-  if (loading) return <div className="container"><p>Loading dashboard…</p></div>
+  if (loading) return (
+    <div className="container">
+      <div className="skeleton" />
+      <div className="grid grid-2 mt-2">
+        <div className="skeleton" />
+        <div className="skeleton" />
+      </div>
+    </div>
+  )
   if (err) return <div className="container"><p className="error">Error: {err}</p></div>
 
   const totalRevenue = revData.reduce((s, r) => s + Number(r.revenue || 0), 0)
@@ -65,48 +122,50 @@ function Dashboard() {
 
   return (
     <div className="container">
-      <h2>Dashboard</h2>
+      <div className="row mb-2">
+        <div className="h1">Dashboard</div>
+        <span className="right badge glow">Live</span>
+      </div>
 
-      <div className="grid grid-auto" style={{ marginBottom: 12 }}>
-        <div className="card">
-          <h4 className="help" style={{ margin: 0 }}>Total Revenue (60d)</h4>
-          <div style={{ marginTop: 6, fontSize: 22, fontWeight: 700 }}>{inr(totalRevenue)}</div>
+      {/* KPI Cards */}
+      <div className="grid grid-auto mb-2">
+        <div className="card kpi">
+          <span className="help">Total Revenue (60d)</span>
+          <div className="h2">{inr(totalRevenue)}</div>
         </div>
-        <div className="card">
-          <h4 className="help" style={{ margin: 0 }}>Top SKU</h4>
-          <div style={{ marginTop: 6, fontSize: 22, fontWeight: 700 }}>{bestSku}</div>
+        <div className="card kpi">
+          <span className="help">Top SKU</span>
+          <div className="h2">{bestSku}</div>
         </div>
-        <div className="card">
-          <h4 className="help" style={{ margin: 0 }}>Top Category</h4>
-          <div style={{ marginTop: 6, fontSize: 22, fontWeight: 700 }}>{bestCat}</div>
+        <div className="card kpi">
+          <span className="help">Top Category</span>
+          <div className="h2">{bestCat}</div>
         </div>
       </div>
 
+      {/* Charts */}
       <div className="grid">
-        <div className="card">
-          <b>Revenue by Day (Last 60 days)</b>
-          <Line data={revenueLine} options={{
-            responsive: true,
-            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => inr(ctx.parsed.y) } } },
-            scales: { y: { ticks: { callback: (v) => inr(v) } } }
-          }} />
+        <div className="card chart chart-entrance">
+          <div className="row mb-1">
+            <b>Revenue by Day (Last 60 days)</b>
+            <div className="right">
+              <button className="icon-btn" title="Refresh" onClick={() => window.location.reload()}>
+                ⟳
+              </button>
+            </div>
+          </div>
+          <Line data={revenueLine} options={commonChartOpts} />
         </div>
 
         <div className="grid grid-2">
-          <div className="card">
+          <div className="card chart chart-entrance">
             <b>Top SKUs by Revenue</b>
-            <Bar data={topSkusBar} options={{
-              responsive: true,
-              plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => inr(ctx.parsed.y) } } },
-              scales: { y: { ticks: { callback: (v) => inr(v) } } }
-            }} />
+            <Bar data={topSkusBar} options={commonChartOpts} />
           </div>
-          <div className="card">
+
+          <div className="card chart chart-entrance">
             <b>Category Sales (Revenue)</b>
-            <Doughnut data={categoryPie} options={{
-              responsive: true,
-              plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${inr(ctx.parsed)}` } } }
-            }} />
+            <Doughnut data={categoryPie} options={{ ...commonChartOpts, cutout: '58%' }} />
           </div>
         </div>
       </div>
@@ -117,15 +176,16 @@ function Dashboard() {
 export default function App() {
   return (
     <BrowserRouter>
+      {/* NAV */}
       <nav className="nav">
         <NavLink to="/" end className={({isActive}) => isActive ? 'active' : undefined}>Dashboard</NavLink>
         <NavLink to="/products" className={({isActive}) => isActive ? 'active' : undefined}>Products</NavLink>
-        <div style={{ marginLeft:'auto', display:'flex', gap:12 }}>
-          <NavLink to="/register" className={({isActive}) => isActive ? 'active' : undefined}>Register</NavLink>
-          <NavLink to="/login" className={({isActive}) => isActive ? 'active' : undefined}>Login</NavLink>
-        </div>
+        <div className="spacer" />
+        <NavLink to="/register" className={({isActive}) => isActive ? 'active' : undefined}>Register</NavLink>
+        <NavLink to="/login" className={({isActive}) => isActive ? 'active' : undefined}>Login</NavLink>
       </nav>
 
+      {/* ROUTES */}
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/products" element={<Products />} />
