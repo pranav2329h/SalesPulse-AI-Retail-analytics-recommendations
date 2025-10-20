@@ -24,9 +24,10 @@ ChartJS.register(
 )
 
 // Currency helper
-const inr = (n) => new Intl.NumberFormat('en-IN', {
-  style: 'currency', currency: 'INR', maximumFractionDigits: 0
-}).format(Number(n || 0))
+const inr = (n) =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency', currency: 'INR', maximumFractionDigits: 0
+  }).format(Number(n || 0))
 
 // Common chart options (nice defaults + colors that fit the theme)
 const commonChartOpts = {
@@ -76,12 +77,26 @@ function Dashboard() {
     })()
   }, [])
 
-  // Build datasets
+  // --- Distinct color palettes (inside component so they're in scope) ---
+  const BAR_PALETTE = [
+    '#7bd1ff', '#5aa2ff', '#9e7bff', '#ff7ad9', '#ffb36b',
+    '#7bffb2', '#ffd36b', '#6bffd6', '#b07bff', '#ff7a95'
+  ]
+  const PIE_PALETTE = [
+    '#7bd1ff', '#5aa2ff', '#9e7bff', '#ff7ad9', '#ffb36b',
+    '#7bffb2', '#ffd36b', '#6bffd6', '#b07bff', '#ff7a95', '#9bd67f'
+  ]
+
+  // Build datasets with high-contrast colors
   const revenueLine = useMemo(() => ({
     labels: revData.map(r => r.day),
     datasets: [{
       label: 'Revenue (₹)',
       data: revData.map(r => Number(r.revenue || 0)),
+      borderColor: '#7bd1ff',
+      backgroundColor: 'rgba(123, 209, 255, 0.25)',
+      pointBackgroundColor: '#7bd1ff',
+      pointBorderColor: '#0b1020',
       borderWidth: 2,
       pointRadius: 2,
       tension: 0.25
@@ -93,6 +108,8 @@ function Dashboard() {
     datasets: [{
       label: 'Revenue (₹)',
       data: skuData.map(x => Number(x.revenue || 0)),
+      backgroundColor: skuData.map((_, i) => BAR_PALETTE[i % BAR_PALETTE.length]),
+      borderColor: skuData.map((_, i) => BAR_PALETTE[i % BAR_PALETTE.length]),
       borderWidth: 1
     }]
   }), [skuData])
@@ -101,7 +118,9 @@ function Dashboard() {
     labels: catData.map(x => x.category ?? 'Uncategorized'),
     datasets: [{
       label: 'Revenue (₹)',
-      data: catData.map(x => Number(x.revenue || 0))
+      data: catData.map(x => Number(x.revenue || 0)),
+      backgroundColor: catData.map((_, i) => PIE_PALETTE[i % PIE_PALETTE.length]),
+      borderColor: 'rgba(0,0,0,0)'
     }]
   }), [catData])
 
