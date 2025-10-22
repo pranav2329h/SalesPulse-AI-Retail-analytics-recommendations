@@ -1,0 +1,54 @@
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #121826;
+  color: #e8eefc;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 1.3rem;
+  text-align: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, #2a6efb, #1f3b73);
+  border-radius: 10px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.nav-link {
+  color: #b6c2e2;
+  text-decoration: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+}
+
+.nav-link.active, .nav-link:hover {
+  background: #1a2440;
+  color: #fff;
+}
+
+.sidebar-foot {
+  margin-top: auto;
+  text-align: center;
+  opacity: 0.7;
+  font-size: 0.8rem;
+}
+
+.content {
+  background: #f5f7fa;
+  padding: 2rem;
+  overflow-y: auto;
+}

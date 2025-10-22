@@ -1,150 +1,92 @@
-import { useEffect, useState } from 'react'
-import { listProducts, createProduct, updateProduct, deleteProduct } from '../lib/api'
+import React, { useEffect, useState } from 'react'
+import { fetchJSON } from '../lib/fetchJSON'
+import './style.css'
 
 export default function Products() {
-  const [items, setItems] = useState([])
-  const [q, setQ] = useState('')
-  const [form, setForm] = useState({ name:'', sku:'', price:'', stock_qty:0, category:'' })
-  const [editId, setEditId] = useState(null)
-  const [msg, setMsg] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [products, setProducts] = useState([])
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('')
+  const [sort, setSort] = useState('')
+  const [form, setForm] = useState({ name:'', sku:'', price:'', stock_qty:'', category:'' })
+  const [err, setErr] = useState('')
+  const [ok, setOk] = useState('')
 
-  async function load() {
-    const { data } = await listProducts(q)
-    setItems(data)
-  }
-  useEffect(() => { load() }, []) // initial
-
-  async function onSearch(e) {
-    e.preventDefault()
-    await load()
-  }
-
-  async function onCreate(e) {
-    e.preventDefault()
-    setMsg(null); setLoading(true)
+  const load = async () => {
+    setErr(''); setOk('')
     try {
-      await createProduct({ ...form, price: Number(form.price), stock_qty: Number(form.stock_qty) })
-      setForm({ name:'', sku:'', price:'', stock_qty:0, category:'' })
-      await load()
-      setMsg('Product created')
+      const params = new URLSearchParams({ search, category, sort })
+      const data = await fetchJSON(`/products?${params}`)
+      setProducts(Array.isArray(data) ? data : [])
     } catch (e) {
-      setMsg(e.response?.data?.error || 'Create failed')
-    } finally {
-      setLoading(false)
+      setErr(e.message)
+      setProducts([])
     }
   }
 
-  async function onUpdate(e) {
+  useEffect(() => { load() }, [search, category, sort])
+
+  const addProduct = async (e) => {
     e.preventDefault()
-    setMsg(null); setLoading(true)
+    setErr(''); setOk('')
     try {
-      await updateProduct(editId, { ...form, price: Number(form.price), stock_qty: Number(form.stock_qty) })
-      setEditId(null)
-      setForm({ name:'', sku:'', price:'', stock_qty:0, category:'' })
-      await load()
-      setMsg('Product updated')
+      const data = await fetchJSON('/products', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify(form)
+      })
+      if (!data || !data.id) setOk('Saved (no JSON body returned)')
+      else setOk('Product added!')
+      setForm({ name:'', sku:'', price:'', stock_qty:'', category:'' })
+      load()
     } catch (e) {
-      setMsg(e.response?.data?.error || 'Update failed')
-    } finally {
-      setLoading(false)
+      setErr(e.message)
     }
   }
 
   return (
-    <div className="container">
-      <div className="row mb-2">
-        <div className="h1">Products</div>
-        <form className="row right" onSubmit={onSearch}>
-          <input className="input" placeholder="Search name/sku/category…" value={q} onChange={e=>setQ(e.target.value)} />
-          <button className="btn btn-ghost">Search</button>
-        </form>
+    <div className="products-page">
+      <h1>Products</h1>
+      {err && <div className="alert error glass">{err}</div>}
+      {ok && <div className="alert success glass">{ok}</div>}
+
+      <div className="filters">
+        <input placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} />
+        <select value={category} onChange={e=>setCategory(e.target.value)}>
+          <option value="">All Categories</option>
+          <option>Jewellery</option>
+          <option>Electronics</option>
+          <option>Fashion</option>
+          <option>Accessories</option>
+          <option>Footwear</option>
+          <option>Home Appliances</option>
+        </select>
+        <select value={sort} onChange={e=>setSort(e.target.value)}>
+          <option value="">Newest</option>
+          <option value="price_asc">Price ↑</option>
+          <option value="price_desc">Price ↓</option>
+        </select>
       </div>
 
-      <div className="grid grid-2">
-        {/* Form card */}
-        <div className="card">
-          <div className="h2 mb-1">{editId ? 'Edit product' : 'Create product'}</div>
-          <form className="grid" onSubmit={editId ? onUpdate : onCreate}>
-            <div>
-              <div className="label">Name</div>
-              <input className="input" value={form.name} onChange={e=>setForm({...form, name:e.target.value})} placeholder="USB-C Cable"/>
-            </div>
-            <div>
-              <div className="label">SKU</div>
-              <input className="input" value={form.sku} onChange={e=>setForm({...form, sku:e.target.value})} placeholder="SKU-USB-001"/>
-            </div>
-            <div className="grid grid-2">
-              <div>
-                <div className="label">Price</div>
-                <input className="input" value={form.price} onChange={e=>setForm({...form, price:e.target.value})} placeholder="299"/>
-              </div>
-              <div>
-                <div className="label">Stock</div>
-                <input className="input" value={form.stock_qty} onChange={e=>setForm({...form, stock_qty:e.target.value})} placeholder="50"/>
-              </div>
-            </div>
-            <div>
-              <div className="label">Category</div>
-              <input className="input" value={form.category} onChange={e=>setForm({...form, category:e.target.value})} placeholder="Electronics"/>
-            </div>
+      <form className="add-form" onSubmit={addProduct}>
+        <h3>Add Product</h3>
+        <input placeholder="Name" value={form.name} onChange={e=>setForm({...form, name:e.target.value})} required />
+        <input placeholder="SKU" value={form.sku} onChange={e=>setForm({...form, sku:e.target.value})} required />
+        <input placeholder="Price" type="number" value={form.price} onChange={e=>setForm({...form, price:e.target.value})} required />
+        <input placeholder="Stock" type="number" value={form.stock_qty} onChange={e=>setForm({...form, stock_qty:e.target.value})} />
+        <input placeholder="Category" value={form.category} onChange={e=>setForm({...form, category:e.target.value})} required />
+        <button>Add</button>
+      </form>
 
-            <div className="row mt-2">
-              <button className="btn btn-primary" disabled={loading}>
-                {loading ? (editId ? 'Updating…' : 'Creating…') : (editId ? 'Update' : 'Create')}
-              </button>
-              {editId && (
-                <button type="button" className="btn btn-ghost" onClick={() => { setEditId(null); setForm({ name:'', sku:'', price:'', stock_qty:0, category:'' }) }}>
-                  Cancel
-                </button>
-              )}
-              {msg && <span className="right help">{msg}</span>}
-            </div>
-          </form>
-        </div>
-
-        {/* Table card */}
-        <div className="card">
-          <div className="row mb-1">
-            <b>Inventory</b>
-            <span className="badge right">{items.length} items</span>
+      <div className="product-grid">
+        {products.map(p=>(
+          <div className="product-card" key={p.id}>
+            <h4>{p.name}</h4>
+            <p><b>SKU:</b> {p.sku}</p>
+            <p><b>Category:</b> {p.category}</p>
+            <p><b>Price:</b> ₹{p.price}</p>
+            <p><b>Stock:</b> {p.stock_qty}</p>
           </div>
-          <table className="table">
-            <thead>
-              <tr>
-                <th style={{width:220}}>Name</th>
-                <th>SKU</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th style={{width:150}}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map(p => (
-                <tr key={p.id}>
-                  <td><b>{p.name}</b></td>
-                  <td className="sku">{p.sku}</td>
-                  <td>{p.category || 'Uncategorized'}</td>
-                  <td>₹{p.price}</td>
-                  <td>{p.stock_qty}</td>
-                  <td>
-                    <div className="row">
-                      <button className="btn btn-ghost" onClick={() => {
-                        setEditId(p.id)
-                        setForm({ name:p.name, sku:p.sku, price:String(p.price), stock_qty:Number(p.stock_qty), category:p.category || '' })
-                      }}>Edit</button>
-                      <button className="btn btn-danger" onClick={async ()=>{ await deleteProduct(p.id); await load() }}>Delete</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {items.length === 0 && (
-                <tr><td colSpan="6" className="help">No products found.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        ))}
       </div>
     </div>
   )

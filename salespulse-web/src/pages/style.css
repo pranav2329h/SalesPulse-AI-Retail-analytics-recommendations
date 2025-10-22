@@ -1,0 +1,92 @@
+/* --- Base layout --- */
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  background: #f5f7fa;
+  color: #222;
+}
+
+/* --- Login --- */
+.login-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg,#6a11cb,#2575fc);
+}
+.login-card {
+  background:#fff;
+  padding:2rem 3rem;
+  border-radius:1rem;
+  box-shadow:0 10px 30px rgba(0,0,0,.1);
+  width:340px;
+  text-align:center;
+}
+.login-card input{
+  width:100%;padding:.8rem;margin:.5rem 0;
+  border:1px solid #ddd;border-radius:6px;
+}
+.login-card button{
+  width:100%;padding:.9rem;
+  background:#2575fc;color:#fff;border:none;
+  border-radius:6px;font-size:1rem;cursor:pointer;
+}
+.login-card button:hover{background:#1a5ddf;}
+.error{color:#e63946;font-size:.9rem;}
+.hint{font-size:.8rem;color:#555}
+
+/* --- Dashboard --- */
+.kpi-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));
+  gap:1rem;margin-bottom:1.5rem;
+}
+.kpi-card{
+  background:#fff;padding:1rem;border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.05);
+}
+.kpi-label{color:#666;font-size:.9rem;}
+.kpi-value{font-weight:700;font-size:1.2rem;margin-top:.3rem;}
+.chart-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));
+  gap:1rem;
+}
+.chart-card{
+  background:#fff;padding:1rem;border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.05);
+}
+.chart-card.full{grid-column:1/-1;}
+.skeleton{
+  background:#fff;padding:1rem;border-radius:10px;
+  text-align:center;
+}
+
+/* --- Products --- */
+.products-page h1{margin-bottom:1rem;}
+.filters{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;}
+.filters input,.filters select{
+  padding:.6rem;border:1px solid #ccc;border-radius:6px;
+}
+.add-form{
+  display:flex;flex-wrap:wrap;gap:1rem;
+  background:#fff;padding:1rem;border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.05);margin-bottom:1.5rem;
+}
+.add-form input{
+  flex:1;min-width:160px;padding:.6rem;border:1px solid #ddd;border-radius:6px;
+}
+.add-form button{
+  background:#2575fc;color:#fff;border:none;
+  padding:.7rem 1.4rem;border-radius:6px;cursor:pointer;
+}
+.add-form button:hover{background:#1a5ddf;}
+.product-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:1rem;
+}
+.product-card{
+  background:#fff;padding:1rem;border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.05);
+  transition:transform .2s;
+}
+.product-card:hover{transform:translateY(-4px);}
+.product-card h4{color:#2575fc;margin:.2rem 0;}
