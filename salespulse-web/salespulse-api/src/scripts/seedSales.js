@@ -1,63 +1,56 @@
-// src/scripts/seedSales.js
 import { PrismaClient } from '@prisma/client'
 import { faker } from '@faker-js/faker'
 
 const prisma = new PrismaClient()
 
-const CATEGORIES = ['Electronics', 'Apparel', 'Home', 'Beauty', 'Grocery']
-const SKUS = Array.from({ length: 30 }, (_, i) => `SKU-${1000 + i}`)
-
-function round2(n) {
-  return Math.round(n * 100) / 100
-}
-
 async function main() {
-  console.log('Seeding sales...')
+  console.log('🌱 Seeding demo data...')
 
-  // Clear existing data if you want a clean slate (optional)
-  // await prisma.sale.deleteMany()
-
-  const today = new Date()
-  const batch = []
-  for (let d = 0; d < 90; d++) {
-    const date = new Date(today)
-    date.setHours(12, 0, 0, 0) // normalize time
-    date.setDate(today.getDate() - d)
-
-    // ~40 rows per day
-    for (let i = 0; i < 40; i++) {
-      const sku = faker.helpers.arrayElement(SKUS)
-      const category = faker.helpers.arrayElement(CATEGORIES)
-      const quantity = faker.number.int({ min: 1, max: 5 })
-      const unitPrice = round2(faker.number.float({ min: 5, max: 500 }))
-      const revenue = round2(quantity * unitPrice)
-
-      batch.push({
-        orderDate: date,
-        sku,
-        category,
-        quantity,
-        unitPrice,
-        revenue
-      })
+  // Create demo user
+  const bcrypt = await import('bcryptjs')
+  const hash = await bcrypt.hash('demo123', 10)
+  await prisma.user.create({
+    data: {
+      email: 'demo@example.com',
+      passwordHash: hash
     }
-  }
-
-  // Bulk insert
-  await prisma.sale.createMany({
-    data: batch,
-    skipDuplicates: true
   })
 
-  console.log(`Seeded ${batch.length} sales rows`)
+  // Create 20 products
+  const products = []
+  for (let i = 0; i < 20; i++) {
+    products.push(await prisma.product.create({
+      data: {
+        name: faker.commerce.productName(),
+        sku: faker.string.alphanumeric(8).toUpperCase(),
+        price: faker.number.float({ min: 100, max: 2000, precision: 0.01 }),
+        stock_qty: faker.number.int({ min: 10, max: 500 }),
+        category: faker.commerce.department()
+      }
+    }))
+  }
+
+  // Create 200 random sales (last 60 days)
+  for (let i = 0; i < 200; i++) {
+    const product = faker.helpers.arrayElement(products)
+    const quantity = faker.number.int({ min: 1, max: 10 })
+    const orderDate = faker.date.recent({ days: 60 })
+    const revenue = Number(product.price) * quantity
+    await prisma.sale.create({
+      data: {
+        orderDate,
+        sku: product.sku,
+        category: product.category,
+        quantity,
+        unitPrice: product.price,
+        revenue
+      }
+    })
+  }
+
+  console.log('✅ Demo data seeded successfully!')
 }
 
 main()
-  .then(async () => {
-    await prisma.$disconnect()
-  })
-  .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+  .catch((e) => console.error(e))
+  .finally(async () => await prisma.$disconnect())

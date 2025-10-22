@@ -1,85 +1,75 @@
 import { Router } from 'express'
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
-const router = Router()
-const asInt = (v, d) => {
-  const n = Number.parseInt(v, 10)
-  return Number.isFinite(n) && n > 0 ? n : d
-}
+import { prisma } from '../lib/prisma.js'
 
-// revenue by day
+const router = Router()
+
+// GET /kpis/revenue-by-day?days=60
 router.get('/revenue-by-day', async (req, res) => {
   try {
-    const days = asInt(req.query.days, 30)
+    const days = Number(req.query.days || 30)
+    const since = new Date()
+    since.setDate(since.getDate() - days)
+
+    // Use raw SQL to group by DATE for MySQL
     const rows = await prisma.$queryRaw`
-      SELECT DATE(o.created_at) AS day,
-             ROUND(SUM(oi.qty * COALESCE(oi.price, p.price, 0)), 2) AS revenue
-      FROM order_items oi
-      JOIN orders   o ON o.id = oi.order_id
-      JOIN products p ON p.id = oi.product_id
-      WHERE o.created_at >= DATE_SUB(CURDATE(), INTERVAL ${days} DAY)
-      GROUP BY DATE(o.created_at)
+      SELECT DATE(order_date) AS day, SUM(revenue) AS revenue
+      FROM sales
+      WHERE order_date >= ${since}
+      GROUP BY DATE(order_date)
       ORDER BY day ASC;
     `
-    const data = rows.map(r => ({
-      day: (r.day instanceof Date) ? r.day.toISOString().slice(0,10) : String(r.day),
-      revenue: Number(r.revenue ?? 0)
-    }))
-    res.json(data)
-  } catch (e) {
-    res.status(500).json({ error: 'Internal error' })
+    res.json(rows.map(r => ({ day: r.day, revenue: Number(r.revenue) })))
+  } catch (err) {
+    console.error('revenue-by-day error', err)
+    res.status(500).json({ error: 'internal_error' })
   }
 })
 
-// top skus
-router.get('/top-skus', async (req, res) => {
-  try {
-    const days = asInt(req.query.days, 60)
-    const limit = asInt(req.query.limit, 10)
-    const rows = await prisma.$queryRaw`
-      SELECT p.sku AS sku,
-             ROUND(SUM(oi.qty * COALESCE(oi.price, p.price, 0)), 2) AS revenue,
-             SUM(oi.qty) AS units
-      FROM order_items oi
-      JOIN orders   o ON o.id = oi.order_id
-      JOIN products p ON p.id = oi.product_id
-      WHERE o.created_at >= DATE_SUB(CURDATE(), INTERVAL ${days} DAY)
-      GROUP BY p.sku
-      ORDER BY revenue DESC
-      LIMIT ${limit};
-    `
-    const data = rows.map(r => ({
-      sku: String(r.sku),
-      revenue: Number(r.revenue ?? 0),
-      units: Number(r.units ?? 0)
-    }))
-    res.json(data)
-  } catch (e) {
-    res.status(500).json({ error: 'Internal error' })
-  }
-})
-
-// category sales
+// GET /kpis/category-sales?days=60
 router.get('/category-sales', async (req, res) => {
   try {
-    const days = asInt(req.query.days, 60)
+    const days = Number(req.query.days || 30)
+    const since = new Date()
+    since.setDate(since.getDate() - days)
+
     const rows = await prisma.$queryRaw`
-      SELECT p.category AS category,
-             ROUND(SUM(oi.qty * COALESCE(oi.price, p.price, 0)), 2) AS revenue
-      FROM order_items oi
-      JOIN orders   o ON o.id = oi.order_id
-      JOIN products p ON p.id = oi.product_id
-      WHERE o.created_at >= DATE_SUB(CURDATE(), INTERVAL ${days} DAY)
-      GROUP BY p.category
+      SELECT category, SUM(revenue) AS revenue
+      FROM sales
+      WHERE order_date >= ${since}
+      GROUP BY category
       ORDER BY revenue DESC;
     `
-    const data = rows.map(r => ({
-      category: r.category === null ? 'Uncategorized' : String(r.category),
-      revenue: Number(r.revenue ?? 0)
-    }))
-    res.json(data)
-  } catch (e) {
-    res.status(500).json({ error: 'Internal error' })
+    res.json(rows.map(r => ({ category: r.category, revenue: Number(r.revenue) })))
+  } catch (err) {
+    console.error('category-sales error', err)
+    res.status(500).json({ error: 'internal_error' })
+  }
+})
+
+// GET /kpis/top-skus?days=60&limit=10
+router.get('/top-skus', async (req, res) => {
+  try {
+    const days = Number(req.query.days || 30)
+    const limit = Number(req.query.limit || 10)
+    const since = new Date()
+    since.setDate(since.getDate() - days)
+
+    const rows = await prisma.$queryRaw`
+      SELECT sku, SUM(quantity) AS qty, SUM(revenue) AS revenue
+      FROM sales
+      WHERE order_date >= ${since}
+      GROUP BY sku
+      ORDER BY qty DESC
+      LIMIT ${limit};
+    `
+    res.json(rows.map(r => ({
+      sku: r.sku,
+      quantity: Number(r.qty),
+      revenue: Number(r.revenue),
+    })))
+  } catch (err) {
+    console.error('top-skus error', err)
+    res.status(500).json({ error: 'internal_error' })
   }
 })
 
