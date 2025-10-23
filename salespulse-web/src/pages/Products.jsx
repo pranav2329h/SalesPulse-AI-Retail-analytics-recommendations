@@ -17,10 +17,7 @@ export default function Products() {
       const params = new URLSearchParams({ search, category, sort })
       const data = await fetchJSON(`/products?${params}`)
       setProducts(Array.isArray(data) ? data : [])
-    } catch (e) {
-      setErr(e.message)
-      setProducts([])
-    }
+    } catch (e) { setErr(e.message); setProducts([]) }
   }
 
   useEffect(() => { load() }, [search, category, sort])
@@ -30,17 +27,11 @@ export default function Products() {
     setErr(''); setOk('')
     try {
       const data = await fetchJSON('/products', {
-        method:'POST',
-        headers:{ 'Content-Type':'application/json' },
+        method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify(form)
       })
-      if (!data || !data.id) setOk('Saved (no JSON body returned)')
-      else setOk('Product added!')
-      setForm({ name:'', sku:'', price:'', stock_qty:'', category:'' })
-      load()
-    } catch (e) {
-      setErr(e.message)
-    }
+      setOk('Product added!'); setForm({ name:'', sku:'', price:'', stock_qty:'', category:'' }); load()
+    } catch (e) { setErr(e.message) }
   }
 
   return (
@@ -48,17 +39,12 @@ export default function Products() {
       <h1>Products</h1>
       {err && <div className="alert error glass">{err}</div>}
       {ok && <div className="alert success glass">{ok}</div>}
-
       <div className="filters">
-        <input placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} />
+        <input placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)}/>
         <select value={category} onChange={e=>setCategory(e.target.value)}>
           <option value="">All Categories</option>
-          <option>Jewellery</option>
-          <option>Electronics</option>
-          <option>Fashion</option>
-          <option>Accessories</option>
-          <option>Footwear</option>
-          <option>Home Appliances</option>
+          <option>Jewellery</option><option>Electronics</option><option>Fashion</option>
+          <option>Accessories</option><option>Footwear</option><option>Home Appliances</option>
         </select>
         <select value={sort} onChange={e=>setSort(e.target.value)}>
           <option value="">Newest</option>
@@ -66,17 +52,15 @@ export default function Products() {
           <option value="price_desc">Price ↓</option>
         </select>
       </div>
-
       <form className="add-form" onSubmit={addProduct}>
         <h3>Add Product</h3>
-        <input placeholder="Name" value={form.name} onChange={e=>setForm({...form, name:e.target.value})} required />
-        <input placeholder="SKU" value={form.sku} onChange={e=>setForm({...form, sku:e.target.value})} required />
-        <input placeholder="Price" type="number" value={form.price} onChange={e=>setForm({...form, price:e.target.value})} required />
-        <input placeholder="Stock" type="number" value={form.stock_qty} onChange={e=>setForm({...form, stock_qty:e.target.value})} />
-        <input placeholder="Category" value={form.category} onChange={e=>setForm({...form, category:e.target.value})} required />
+        <input placeholder="Name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required/>
+        <input placeholder="SKU" value={form.sku} onChange={e=>setForm({...form,sku:e.target.value})} required/>
+        <input placeholder="Price" type="number" value={form.price} onChange={e=>setForm({...form,price:e.target.value})} required/>
+        <input placeholder="Stock" type="number" value={form.stock_qty} onChange={e=>setForm({...form,stock_qty:e.target.value})}/>
+        <input placeholder="Category" value={form.category} onChange={e=>setForm({...form,category:e.target.value})} required/>
         <button>Add</button>
       </form>
-
       <div className="product-grid">
         {products.map(p=>(
           <div className="product-card" key={p.id}>

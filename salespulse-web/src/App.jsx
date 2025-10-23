@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Sidebar from './components/Sidebar'
 import Dashboard from './pages/Dashboard'
 import Products from './pages/Products'
@@ -19,8 +19,11 @@ export default function App() {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) setUser({ email: 'admin@salespulse.com' })
+    const ses = localStorage.getItem('sp_session')
+    if (ses === 'true') {
+      const email = localStorage.getItem('sp_admin_email') || 'admin@salespulse.com'
+      setUser({ email })
+    }
   }, [])
 
   if (!user) return <Login onLogin={(u) => setUser(u)} />
@@ -31,7 +34,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/products" element={<Products />} />
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
     </BrowserRouter>

@@ -13,7 +13,6 @@ export default function Dashboard() {
 
   const load = async () => {
     setLoading(true)
-    setErr('')
     try {
       const [r, c, t] = await Promise.all([
         fetchJSON('/kpis/revenue-by-day?days=60'),
@@ -23,12 +22,8 @@ export default function Dashboard() {
       setRevByDay(Array.isArray(r) ? r : [])
       setCatSales(Array.isArray(c) ? c : [])
       setTopSkus(Array.isArray(t) ? t : [])
-    } catch (e) {
-      setErr(e.message || 'Failed to load')
-      setRevByDay([]); setCatSales([]); setTopSkus([])
-    } finally {
-      setLoading(false)
-    }
+    } catch (e) { setErr(e.message) }
+    finally { setLoading(false) }
   }
 
   useEffect(() => { load() }, [])
@@ -41,7 +36,7 @@ export default function Dashboard() {
       borderColor: '#2a6efb',
       backgroundColor: 'rgba(42,110,251,0.25)',
       tension: 0.3,
-      fill: true,
+      fill: true
     }]
   }), [revByDay])
 
@@ -68,38 +63,17 @@ export default function Dashboard() {
     <div className="dashboard">
       <h1>Dashboard</h1>
       {err && <div className="alert error glass">{err}</div>}
-      {loading ? (
-        <div className="skeleton">Loading charts…</div>
-      ) : (
+      {loading ? <div className="skeleton">Loading charts…</div> : (
         <>
           <div className="kpi-grid">
-            <div className="kpi-card">
-              <div className="kpi-label">Total Revenue</div>
-              <div className="kpi-value">₹{totalRev}</div>
-            </div>
-            <div className="kpi-card">
-              <div className="kpi-label">Top Category</div>
-              <div className="kpi-value">{catSales[0]?.category || '—'}</div>
-            </div>
-            <div className="kpi-card">
-              <div className="kpi-label">Top SKU</div>
-              <div className="kpi-value">{topSkus[0]?.sku || '—'}</div>
-            </div>
+            <div className="kpi-card"><div className="kpi-label">Total Revenue</div><div className="kpi-value">₹{totalRev}</div></div>
+            <div className="kpi-card"><div className="kpi-label">Top Category</div><div className="kpi-value">{catSales[0]?.category || '—'}</div></div>
+            <div className="kpi-card"><div className="kpi-label">Top SKU</div><div className="kpi-value">{topSkus[0]?.sku || '—'}</div></div>
           </div>
-
           <div className="chart-grid">
-            <div className="chart-card">
-              <h3>Revenue by Day</h3>
-              <Line data={revenueLine} />
-            </div>
-            <div className="chart-card">
-              <h3>Revenue by Category</h3>
-              <Doughnut data={catPie} />
-            </div>
-            <div className="chart-card full">
-              <h3>Top SKUs</h3>
-              <Bar data={topBar} />
-            </div>
+            <div className="chart-card"><h3>Revenue by Day</h3><Line data={revenueLine}/></div>
+            <div className="chart-card"><h3>Revenue by Category</h3><Doughnut data={catPie}/></div>
+            <div className="chart-card full"><h3>Top SKUs</h3><Bar data={topBar}/></div>
           </div>
         </>
       )}
