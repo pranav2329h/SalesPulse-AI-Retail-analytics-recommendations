@@ -12,7 +12,7 @@ export default function Dashboard() {
   const [err, setErr] = useState('')
 
   const load = async () => {
-    setLoading(true)
+    setLoading(true); setErr('')
     try {
       const [r, c, t] = await Promise.all([
         fetchJSON('/kpis/revenue-by-day?days=60'),
@@ -22,8 +22,12 @@ export default function Dashboard() {
       setRevByDay(Array.isArray(r) ? r : [])
       setCatSales(Array.isArray(c) ? c : [])
       setTopSkus(Array.isArray(t) ? t : [])
-    } catch (e) { setErr(e.message) }
-    finally { setLoading(false) }
+    } catch (e) {
+      setErr(e.message || 'Failed to load dashboard data')
+      setRevByDay([]); setCatSales([]); setTopSkus([])
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { load() }, [])
@@ -32,7 +36,7 @@ export default function Dashboard() {
     labels: revByDay.map(d => d.day),
     datasets: [{
       label: 'Revenue',
-      data: revByDay.map(d => d.revenue),
+      data: revByDay.map(d => Number(d.revenue || 0)),
       borderColor: '#2a6efb',
       backgroundColor: 'rgba(42,110,251,0.25)',
       tension: 0.3,
@@ -43,7 +47,7 @@ export default function Dashboard() {
   const catPie = useMemo(() => ({
     labels: catSales.map(c => c.category),
     datasets: [{
-      data: catSales.map(c => c.revenue),
+      data: catSales.map(c => Number(c.revenue || 0)),
       backgroundColor: ['#2a6efb','#6a11cb','#ff6b6b','#00bfa6','#fbbf24','#10b981']
     }]
   }), [catSales])
@@ -52,28 +56,51 @@ export default function Dashboard() {
     labels: topSkus.map(s => s.sku),
     datasets: [{
       label: 'Quantity',
-      data: topSkus.map(s => s.quantity),
+      data: topSkus.map(s => Number(s.quantity || 0)),
       backgroundColor: '#1e3a8a'
     }]
   }), [topSkus])
 
-  const totalRev = revByDay.reduce((a,b)=>a+Number(b.revenue||0),0).toLocaleString('en-IN')
+  const totalRev = revByDay
+    .reduce((a,b)=>a+Number(b.revenue||0),0)
+    .toLocaleString('en-IN')
 
   return (
     <div className="dashboard">
       <h1>Dashboard</h1>
       {err && <div className="alert error glass">{err}</div>}
-      {loading ? <div className="skeleton">Loading charts…</div> : (
+      {loading ? (
+        <div className="skeleton">Loading charts…</div>
+      ) : (
         <>
           <div className="kpi-grid">
-            <div className="kpi-card"><div className="kpi-label">Total Revenue</div><div className="kpi-value">₹{totalRev}</div></div>
-            <div className="kpi-card"><div className="kpi-label">Top Category</div><div className="kpi-value">{catSales[0]?.category || '—'}</div></div>
-            <div className="kpi-card"><div className="kpi-label">Top SKU</div><div className="kpi-value">{topSkus[0]?.sku || '—'}</div></div>
+            <div className="kpi-card">
+              <div className="kpi-label">Total Revenue</div>
+              <div className="kpi-value">₹{totalRev}</div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Top Category</div>
+              <div className="kpi-value">{catSales[0]?.category || '—'}</div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Top SKU</div>
+              <div className="kpi-value">{topSkus[0]?.sku || '—'}</div>
+            </div>
           </div>
+
           <div className="chart-grid">
-            <div className="chart-card"><h3>Revenue by Day</h3><Line data={revenueLine}/></div>
-            <div className="chart-card"><h3>Revenue by Category</h3><Doughnut data={catPie}/></div>
-            <div className="chart-card full"><h3>Top SKUs</h3><Bar data={topBar}/></div>
+            <div className="chart-card">
+              <h3>Revenue by Day</h3>
+              <Line data={revenueLine} />
+            </div>
+            <div className="chart-card">
+              <h3>Revenue by Category</h3>
+              <Doughnut data={catPie} />
+            </div>
+            <div className="chart-card full">
+              <h3>Top SKUs</h3>
+              <Bar data={topBar} />
+            </div>
           </div>
         </>
       )}

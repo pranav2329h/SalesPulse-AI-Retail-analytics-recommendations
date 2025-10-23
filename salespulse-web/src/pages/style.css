@@ -1,92 +1,106 @@
-/* --- Base layout --- */
-body {
-  font-family: 'Inter', sans-serif;
-  margin: 0;
-  background: #f5f7fa;
-  color: #222;
+:root{
+  --bg:#0b1020; --text:#e5e7eb; --brand:#2a6efb; --accent:#6a11cb;
+  --shadow:0 10px 35px rgba(0,0,0,.35);
 }
+html,body{
+  margin:0; font-family:'Inter',system-ui,Segoe UI,Roboto;
+  background:radial-gradient(1100px 600px at 10% -10%,#233163 0%,transparent 60%),radial-gradient(1000px 500px at 110% 10%,#24103f 0%,transparent 50%),var(--bg);
+  color:var(--text); min-height:100%;
+}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
-/* --- Login --- */
-.login-container {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg,#6a11cb,#2575fc);
-}
-.login-card {
-  background:#fff;
-  padding:2rem 3rem;
-  border-radius:1rem;
-  box-shadow:0 10px 30px rgba(0,0,0,.1);
-  width:340px;
-  text-align:center;
-}
-.login-card input{
-  width:100%;padding:.8rem;margin:.5rem 0;
-  border:1px solid #ddd;border-radius:6px;
-}
-.login-card button{
-  width:100%;padding:.9rem;
-  background:#2575fc;color:#fff;border:none;
-  border-radius:6px;font-size:1rem;cursor:pointer;
-}
-.login-card button:hover{background:#1a5ddf;}
-.error{color:#e63946;font-size:.9rem;}
-.hint{font-size:.8rem;color:#555}
+/* Alerts / skeleton */
+.alert{ padding:.75rem 1rem; border-radius:12px; margin:.75rem 0; backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.14);}
+.alert.error{color:#fecaca;background:rgba(239,68,68,.08);}
+.alert.success{color:#bbf7d0;background:rgba(16,185,129,.08);}
+.glass{background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.04));}
+.skeleton{border-radius:18px;padding:1rem;text-align:center;backdrop-filter:blur(6px);background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.14);color:#cbd5e1;}
 
-/* --- Dashboard --- */
-.kpi-grid{
-  display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));
-  gap:1rem;margin-bottom:1.5rem;
-}
-.kpi-card{
-  background:#fff;padding:1rem;border-radius:10px;
-  box-shadow:0 2px 6px rgba(0,0,0,.05);
-}
-.kpi-label{color:#666;font-size:.9rem;}
-.kpi-value{font-weight:700;font-size:1.2rem;margin-top:.3rem;}
-.chart-grid{
-  display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));
-  gap:1rem;
-}
-.chart-card{
-  background:#fff;padding:1rem;border-radius:10px;
-  box-shadow:0 2px 6px rgba(0,0,0,.05);
-}
+/* Login */
+.login-container{height:100vh;display:grid;place-items:center;}
+.login-card{width:min(92vw,380px);padding:2.2rem 2rem;border-radius:18px;backdrop-filter:blur(10px);
+  background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.12);box-shadow:var(--shadow);animation:fadeInUp .5s ease both;}
+.login-card h2{margin:0 0 1.2rem;font-weight:700;}
+.login-card input{width:100%;padding:.9rem;margin:.55rem 0;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:var(--text);outline:none;}
+.login-card button{width:100%;margin-top:.7rem;padding:.95rem;border:none;border-radius:12px;color:#fff;background:linear-gradient(135deg,var(--brand),var(--accent));cursor:pointer;font-weight:600;box-shadow:0 6px 20px rgba(42,110,251,.35);}
+.hint{color:#94a3b8;font-size:.85rem;}
+.error{color:#ef4444;}
+
+/* Layout (pair with sidebar.css) */
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+.content{padding:2rem;}
+
+/* Dashboard */
+.dashboard h1{margin:0 0 1rem;font-weight:800;}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.kpi-card{padding:1rem 1.2rem;border-radius:16px;backdrop-filter:blur(6px);background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.14);box-shadow:var(--shadow);transition:transform .15s,box-shadow .2s;}
+.kpi-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.45);}
+.kpi-label{color:#c7d2fe;font-size:.9rem;}
+.kpi-value{font-weight:800;font-size:1.35rem;margin-top:.3rem;}
+.chart-grid{display:grid;grid-template-columns:repeat(2,minmax(300px,1fr));gap:1rem;}
+.chart-card{padding:1rem;border-radius:18px;backdrop-filter:blur(8px);background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.14);box-shadow:var(--shadow);animation:fadeInUp .4s ease both;}
 .chart-card.full{grid-column:1/-1;}
-.skeleton{
-  background:#fff;padding:1rem;border-radius:10px;
-  text-align:center;
+
+/* Products */
+.products-page h1{margin:0 0 1rem;font-weight:800;}
+.filters{display:flex;flex-wrap:wrap;gap:.8rem;margin:.5rem 0 1rem;}
+.filters input,.filters select{padding:.65rem .8rem;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:var(--text);backdrop-filter:blur(6px);}
+.add-form{display:flex;flex-wrap:wrap;gap:.8rem;padding:1rem;border-radius:16px;backdrop-filter:blur(6px);background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.14);box-shadow:var(--shadow);margin-bottom:1.5rem;}
+.add-form h3{width:100%;margin:.2rem 0 .3rem;font-weight:800;}
+.add-form input{flex:1;min-width:180px;padding:.65rem .8rem;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:var(--text);}
+.add-form button{padding:.75rem 1.2rem;border:none;border-radius:12px;color:#fff;background:linear-gradient(135deg,var(--brand),var(--accent));cursor:pointer;font-weight:700;box-shadow:0 12px 30px rgba(42,110,251,.35);}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;}
+.product-card{padding:1rem;border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.14);box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform .15s,box-shadow .2s;}
+.product-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.45);}
+.product-card::before{content:'';position:absolute;top:-60%;left:-40%;width:140%;height:140%;background:linear-gradient(120deg,transparent,rgba(255,255,255,.12),transparent);transform:rotate(12deg);transition:transform .3s;}
+.product-card:hover::before{transform:rotate(12deg) translateX(15%);}
+.product-card h4{margin:.1rem 0 .45rem;color:#c7d2fe;}
+.product-card p{margin:.25rem 0;color:#e5e7eb;opacity:.9;font-size:.95rem;}
+
+
+
+/* === OVERRIDES REQUESTED === */
+
+/* Chart titles inside chart cards → white */
+.chart-card h3 {
+  color: #ffffff;
 }
 
-/* --- Products --- */
-.products-page h1{margin-bottom:1rem;}
-.filters{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;}
-.filters input,.filters select{
-  padding:.6rem;border:1px solid #ccc;border-radius:6px;
+/* Make sure general small labels inside dark cards remain readable */
+.kpi-label,
+.kpi-value {
+  color: #ffffff;
 }
-.add-form{
-  display:flex;flex-wrap:wrap;gap:1rem;
-  background:#fff;padding:1rem;border-radius:10px;
-  box-shadow:0 2px 6px rgba(0,0,0,.05);margin-bottom:1.5rem;
+
+/* Products: dropdowns (category/sort) use NAVY BLUE with white text */
+.filters select {
+  background-color: #0f1b3d;   /* navy blue */
+  color: #ffffff;
+  border: 1px solid #1f2b5a;
 }
-.add-form input{
-  flex:1;min-width:160px;padding:.6rem;border:1px solid #ddd;border-radius:6px;
+.filters select:hover {
+  filter: brightness(1.06);
 }
-.add-form button{
-  background:#2575fc;color:#fff;border:none;
-  padding:.7rem 1.4rem;border-radius:6px;cursor:pointer;
+.filters select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(32, 56, 117, 0.35);
+  border-color: #2a3e7c;
 }
-.add-form button:hover{background:#1a5ddf;}
-.product-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:1rem;
+
+/* Ensure dropdown list options are also navy + white (browser support varies) */
+.filters select option {
+  background-color: #0f1b3d;
+  color: #ffffff;
 }
-.product-card{
-  background:#fff;padding:1rem;border-radius:10px;
-  box-shadow:0 2px 6px rgba(0,0,0,.05);
-  transition:transform .2s;
+
+/* Keep inputs readable on dark background if any are nested in dark sections */
+.filters input,
+.add-form input {
+  color: #ffffff;
 }
-.product-card:hover{transform:translateY(-4px);}
-.product-card h4{color:#2575fc;margin:.2rem 0;}
+
+/* Make product labels clearer on dark cards (if needed) */
+.product-card p,
+.product-card h4 {
+  color: #ffffff;
+}

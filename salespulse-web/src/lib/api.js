@@ -23,4 +23,15 @@ export const revenueByDay = (days=30) => api.get('/kpis/revenue-by-day', { param
 export const topSkus = (days=60, limit=10) => api.get('/kpis/top-skus', { params: { days, limit } })
 export const categorySales = (days=60) => api.get('/kpis/category-sales', { params: { days } })
 
+
+// src/lib/api.js
+const BASE =
+  import.meta.env?.VITE_API_URL?.replace(/\/+$/, '') ||
+  'http://localhost:4000';
+
+export function apiUrl(path) {
+  const p = path.startsWith('/') ? path : `/${path}`;
+  return `${BASE}${p}`;
+}
+
 export default api
